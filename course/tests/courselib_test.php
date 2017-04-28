@@ -3453,6 +3453,35 @@ class core_course_courselib_testcase extends advanced_testcase {
         $this->assertFalse($updates->outcomes->updated);
     }
 
+    /**
+     * Test the course_copy_manual_course_enrolments function
+     */
+    public function test_course_copy_manual_course_enrolments() {
+        global $DB, $USER;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        // Create courses.
+        $course1 = $this->getDataGenerator()->create_course(['numsections' => 5]);
+        $course2 = $this->getDataGenerator()->create_course(['numsections' => 5]);
+
+        // Create a teacher and enrol.
+        $teacher = $this->getDataGenerator()->create_user();
+        $teacherrole = $DB->get_record('role', array('shortname' => 'teacher'));
+        $this->getDataGenerator()->enrol_user($teacher->id, $course1->id, $teacherrole->id);
+
+        // Copy the manual enrolments of the teacher role.
+        course_copy_manual_course_enrolments($course2->id, $course1->id, $teacherrole->id);
+
+        // Check enrolment status.
+        $course1context = context_course::instance($course1->id);
+        $course2context = context_course::instance($course2->id);
+        $enrolment1 = is_enrolled($course1context, $teacher);
+        $enrolment2 = is_enrolled($course2context, $teacher);
+        $this->assertTrue($enrolment1);
+        $this->assertTrue($enrolment2);
+    }
+
     public function test_async_module_deletion_hook_implemented() {
         // Async module deletion depends on the 'true' being returned by at least one plugin implementing the hook,
         // 'course_module_adhoc_deletion_recommended'. In core, is implemented by the course recyclebin, which will only return
