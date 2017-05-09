@@ -240,7 +240,14 @@ class helper {
                 'string' => new \lang_string('resortsubcategoriesbyreverse', 'moodle', get_string('idnumbercoursecategory'))
             );
         }
-
+        // Copy.
+        if ($category->can_create_course()) {
+            $actions[] = array(
+                'url' => new \moodle_url('/course/copy.php', array('id' => $course->id, 'returnto' => 'catmanage')),
+                'icon' => new \pix_icon('t/copy', \get_string('copy')),
+                'attributes' => array('class' => 'action-copy')
+            );
+        }
         // Delete.
         if ($category->can_delete_full()) {
             $actions['delete'] = array(

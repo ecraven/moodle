@@ -1263,6 +1263,15 @@ class core_course_management_renderer extends plugin_renderer_base {
                     array('class' => 'action-edit')
                 );
             }
+            // Copy.
+            if ($course->can_edit()) {
+                $actions[] = $this->output->action_icon(
+                    new moodle_url('/course/copy.php', array('id' => $course->id)),
+                    new pix_icon('t/copy', get_string('copy')),
+                    null,
+                    array('class' => 'action-copy')
+                );
+            }
             // Delete.
             if ($course->can_delete()) {
                 $actions[] = $this->output->action_icon(

@@ -4037,3 +4037,59 @@ function course_check_module_updates_since($cm, $from, $fileareas = array(), $fi
 
     return $updates;
 }
+
+/**
+ * Copy enrolments.
+ * When passed, the target course will have the same enrol methods as the source course.
+ *
+ * @param int $newcourseid the id of the new course.
+ * @param int $oldcourseid the id of the old course.
+ * @param int $role the id of the role to be copied.
+ * @return bool
+ * @since Moodle 3.4
+ */
+function course_copy_manual_course_enrolments($newcourseid, $oldcourseid, $role) {
+    global $DB, $CFG;
+    $enrol = $DB->get_record('enrol', array('enrol' => 'manual', 'status' => 0, 'courseid' => $oldcourseid));
+    if ($enrol) {
+        // Let's make an identical "enrol_manual" plugin into target course.
+        $newenrol = clone($enrol);
+        unset($newenrol->id);
+        $newenrol->courseid = $newcourseid;
+        $newcourseenrol = $DB->get_record('enrol', array('enrol' => 'manual', 'courseid' => $newcourseid));
+        if ($newcourseenrol) {
+            $newenrol->id = $newcourseenrol->id;
+            $DB->update_record('enrol', $newenrol);
+        }
+        else {
+            $newenrol->id = $DB->insert_record($newenrol);
+        }
+    }
+    else {
+        $errors[] = get_string('no_enrolmanual', 'block_teacherchoice');
+    }
+    // Now, let's figure out who was enrolled...
+    $enrolled_users = $DB->get_records('user_enrolments', array('enrolid' => $enrol->id));
+    $course_context = context_course::instance($oldcourseid);
+    // ...and who among these are in the given role.
+    $roleusers = array();
+    foreach ($enrolled_users as $enrolled_user) {
+        $roleusers[] = $DB->get_records_sql("SELECT * FROM {role_assignments} WHERE userid = {$enrolled_user->userid} AND roleid "
+        . "IN (". $role .") AND contextid = {$course_context->id};");
+    }
+    if (count($roleusers)) {
+        require_once($CFG->dirroot . '/enrol/manual/lib.php');
+        $enrol_manual_instance = new enrol_manual_plugin();
+        foreach ($roleusers as $roleuser) {
+            $role_assignment = array_pop($roleuser);
+                if (!is_object($role_assignment)) {
+                continue;
+            }
+            $enrol_manual_instance->enrol_user($newenrol, $role_assignment->userid, $role_assignment->roleid);
+        }
+    }
+    else {
+        return true;
+    }
+return true;
+}
