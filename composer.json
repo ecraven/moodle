@@ -9,5 +9,8 @@
         "phpunit/dbUnit": "1.4.*",
         "moodlehq/behat-extension": "3.33.1",
         "mikey179/vfsStream": "^1.6"
+    },
+    "require": {
+        "mso/idna-convert": "1.*"
     }
 }
