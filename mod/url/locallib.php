@@ -39,7 +39,11 @@ require_once("$CFG->dirroot/mod/url/lib.php");
 function url_appears_valid_url($url) {
     if (preg_match('/^(\/|https?:|ftp:)/i', $url)) {
         // note: this is not exact validation, we look for severely malformed URLs only
-        return (bool)preg_match('/^[a-z]+:\/\/([^:@\s]+:[^@\s]+@)?[a-z0-9_\.\-]+(:[0-9]+)?(\/[^#]*)?(#.*)?$/i', $url);
+        if (function_exists('idn_to_utf8')) {
+            return (bool)preg_match('/^[a-zA-Z]+:\/\/([^:@\s]+:[^@\s]+@)?[\pL0-9_\.\-\x{20E3})\x{00ae}\x{00a9}\x{203C}\x{2047}\x{2048}\x{2049}\x{3030}\x{303D}\x{2139}\x{2122}\x{3297}\x{3299}\x{FE00}-\x{FEFF}\x{2190}-\x{21FF}\x{FE00}-\x{FEFF}\x{2300}-\x{23FF}\x{FE00}-\x{FEFF}\x{2460}-\x{24FF}\x{FE00}-\x{FEFF}\x{25A0}-\x{25FF}\x{FE00}-\x{FEFF}\x{2600}-\x{27BF}\x{FE00}-\x{FEFF}\x{2900}-\x{297F}\x{FE00}-\x{FEFF}\x{2B00}-\x{2BF0}\x{FE00}-\x{FEFF}\x{1F000}-\x{1F6FF}\x{FE00}-\x{FEFF}]+(:[0-9]+)?(\/[^#]*)?(#.*)?$/u', $url);
+        } else {
+            return (bool)preg_match('/^[a-z]+:\/\/([^:@\s]+:[^@\s]+@)?[a-z0-9_\.\-]+(:[0-9]+)?(\/[^#]*)?(#.*)?$/i', $url);
+        }
     } else {
         return (bool)preg_match('/^[a-z]+:\/\/...*$/i', $url);
     }
@@ -90,8 +94,17 @@ function url_get_full_url($url, $cm, $course, $config=null) {
 
     if (preg_match('/^(\/|https?:|ftp:)/i', $fullurl) or preg_match('|^/|', $fullurl)) {
         // encode extra chars in URLs - this does not make it always valid, but it helps with some UTF-8 problems
-        $allowed = "a-zA-Z0-9".preg_quote(';/?:@=&$_.+!*(),-#%', '/');
-        $fullurl = preg_replace_callback("/[^$allowed]/", 'url_filter_callback', $fullurl);
+        if (function_exists('idn_to_utf8')) {
+            // Thanks to 💩.la emojis count as valid, too.
+            $allowed = "[\pL]a-zA-Z0-9[\x{20E3})\x{00ae}\x{00a9}\x{203C}\x{2047}\x{2048}\x{2049}\x{3030}\x{303D}\x{2139}
+            \x{2122}\x{3297}\x{3299}\x{FE00}-\x{FEFF}\x{2190}-\x{21FF}\x{FE00}-\x{FEFF}\x{2300}-\x{23FF}
+            \x{FE00}-\x{FEFF}\x{2460}-\x{24FF}\x{FE00}-\x{FEFF}\x{25A0}-\x{25FF}\x{FE00}-\x{FEFF}\x{2600}-\x{27BF}
+            \x{FE00}-\x{FEFF}\x{2900}-\x{297F}\x{FE00}-\x{FEFF}\x{2B00}-\x{2BF0}\x{FE00}-\x{FEFF}\x{1F000}-\x{1F6FF}
+            \x{FE00}-\x{FEFF}]".preg_quote(';/?:@=&$_.+!*(),-#%', '/');
+        } else {
+            $allowed = "a-zA-Z0-9".preg_quote(';/?:@=&$_.+!*(),-#%', '/');
+        }
+        $fullurl = preg_replace_callback("/[^$allowed]/u", 'url_filter_callback', $fullurl);
     } else {
         // encode special chars only
         $fullurl = str_replace('"', '%22', $fullurl);
@@ -260,6 +273,9 @@ function url_print_workaround($url, $cm, $course) {
     url_print_intro($url, $cm, $course, true);
 
     $fullurl = url_get_full_url($url, $cm, $course);
+    if (function_exists('ascii_to_idn')) {
+        $fullurl = url_decode_host($fullurl);
+    }
 
     $display = url_get_final_display_type($url);
     if ($display == RESOURCELIB_DISPLAY_POPUP) {
@@ -275,6 +291,10 @@ function url_print_workaround($url, $cm, $course) {
 
     } else {
         $extra = '';
+    }
+
+    if (function_exists('idn_to_utf8')) {
+        $fullurl = url_decode_host($fullurl);
     }
 
     echo '<div class="urlworkaround">';
@@ -558,4 +578,47 @@ function url_guess_icon($fullurl, $size = null) {
     }
 
     return $icon;
+}
+/**
+ * Mitigates a weakness of encode(), which cannot properly handle URIs but instead encodes their
+ * path or query components, too.
+ * @param string  $uri  Expects the URI as a UTF-8 (or ASCII) string
+ * @return  string  The URI encoded to Punycode, everything but the host component is left alone
+ */
+function url_encode_host($uri) {
+    $parsed = parse_url($uri);
+    if (!isset($parsed['host'])) {
+        return $uri;
+    }
+    $parsed['host'] = idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+    $return = (empty($parsed['scheme']) ? '' : $parsed['scheme'] .
+        (strtolower($parsed['scheme']) == 'mailto' ? ':' : '://')) .
+        (empty($parsed['user']) ? '' : $parsed['user'] . (empty($parsed['pass']) ? '' : ':' . $parsed['pass']) . '@') .
+        $parsed['host'] .
+        (empty($parsed['port']) ? '' : ':' . $parsed['port']) .
+        (empty($parsed['path']) ? '' : $parsed['path']) .
+        (empty($parsed['query']) ? '' : '?' . $parsed['query']) .
+        (empty($parsed['fragment']) ? '' : '#' . $parsed['fragment']);
+    return $return;
+}
+
+/**
+ * Mitigates a weakness of decode(), which can just decode host parts.
+ * @param string  $uri  Expects the URI as a ASCII string
+ * @return  string  The URI encoded back to UTF-8, everything but the host component is left alone
+ */
+function url_decode_host($uri) {
+    $parsed = parse_url($uri);
+    if (!isset($parsed['host'])) {
+        return $uri;
+    }
+    $parsed['host'] = idn_to_utf8($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+    $return = (empty($parsed['scheme']) ? '' : $parsed['scheme'] . (strtolower($parsed['scheme']) == 'mailto' ? ':' : '://')) .
+        (empty($parsed['user']) ? '' : $parsed['user'] . (empty($parsed['pass']) ? '' : ':' . $parsed['pass']) . '@') .
+        $parsed['host'] .
+        (empty($parsed['port']) ? '' : ':' . $parsed['port']) .
+        (empty($parsed['path']) ? '' : $parsed['path']) .
+        (empty($parsed['query']) ? '' : '?' . $parsed['query']) .
+        (empty($parsed['fragment']) ? '' : '#' . $parsed['fragment']);
+    return $return;
 }
