@@ -154,6 +154,8 @@ if (!$issearching && $category !== null) {
         $PAGE->navbar->add($course->get_formatted_name());
     }
 }
+$PAGE->requires->js_call_amd('core/modal_copycourse', 'initCopyCourse', array());
+$PAGE->requires->strings_for_js(array('copycourse', 'copy', 'cancel'), 'moodle');
 
 $notificationspass = array();
 $notificationsfail = array();
@@ -164,6 +166,7 @@ if ($action !== false && confirm_sesskey()) {
     // - resortcourses : Resort courses
     // - showcourse : make a course visible.
     // - hidecourse : make a course hidden.
+    // - copycourse : make a copy (duplicate) of a course.
     // - movecourseup : move the selected course up one.
     // - movecoursedown : move the selected course down.
     // - showcategory : make a category visible.
@@ -194,6 +197,9 @@ if ($action !== false && confirm_sesskey()) {
             break;
         case 'hidecourse' :
             $redirectback = \core_course\management\helper::action_course_hide($course);
+            break;
+        case 'copycourse' :
+            $redirectback = \core_course\management\helper::action_course_copy($course);
             break;
         case 'movecourseup' :
             // They must have specified a category and a course.
