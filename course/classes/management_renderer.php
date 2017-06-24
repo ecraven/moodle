@@ -878,7 +878,7 @@ class core_course_management_renderer extends plugin_renderer_base {
         }
         $options = array();
         foreach ($actions as $action) {
-            $options[] = $this->action_link($action['url'], $action['string']);
+            $options[] = $this->action_link($action['url'], $action['string'], null, array('class' => $action['class']));
         }
         return html_writer::div(join(' | ', $options), 'listing-actions course-detail-listing-actions');
     }
@@ -1261,14 +1261,23 @@ class core_course_management_renderer extends plugin_renderer_base {
             array('courseid' => $course->id, 'categoryid' => $course->category, 'sesskey' => sesskey())
         );
         $actions = array();
-        // Edit.
         if ($course->can_access()) {
+            // Edit.
             if ($course->can_edit()) {
                 $actions[] = $this->output->action_icon(
                     new moodle_url('/course/edit.php', array('id' => $course->id)),
                     new pix_icon('t/edit', get_string('edit')),
                     null,
                     array('class' => 'action-edit')
+                );
+            }
+            // Copy.
+            if ($course->can_restore()) {
+                $actions[] = $this->output->action_icon(
+                    new moodle_url($baseurl, array()),
+                    new pix_icon('t/copy', get_string('duplicate')),
+                    null,
+                    array('class' => 'action-copy')
                 );
             }
             // Delete.

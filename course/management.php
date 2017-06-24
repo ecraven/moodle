@@ -154,6 +154,8 @@ if (!$issearching && $category !== null) {
         $PAGE->navbar->add($course->get_formatted_name());
     }
 }
+$PAGE->requires->js_call_amd('core/modal_copycourse', 'initCopyCourse', array());
+$PAGE->requires->strings_for_js(array('copycourse', 'copy', 'cancel'), 'moodle');
 
 $notificationspass = array();
 $notificationsfail = array();
