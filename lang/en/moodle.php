@@ -283,6 +283,7 @@ The other cookie is purely for convenience, usually called something like MOODLE
 $string['cookiesnotenabled'] = 'Unfortunately, cookies are currently not enabled in your browser';
 $string['copy'] = 'copy';
 $string['copyasnoun'] = 'copy';
+$string['copycourse'] = 'Copy a course';
 $string['copyingcoursefiles'] = 'Copying course files';
 $string['copyingsitefiles'] = 'Copying site files used in course';
 $string['copyinguserfiles'] = 'Copying user files';
@@ -1084,6 +1085,8 @@ $string['jump'] = 'Jump';
 $string['jumpto'] = 'Jump to...';
 $string['keep'] = 'Keep';
 $string['keepsearching'] = 'Keep searching';
+$string['keepmanualenrolmentsroles'] = 'Keep manual enrolments of role';
+$string['keepmanualenrolmentsroles_help'] = 'If enabled, persons now manually enrolled with those roles will also be manually enrolled in the copy of the course.';
 $string['langltr'] = 'Language direction left-to-right';
 $string['langrtl'] = 'Language direction right-to-left';
 $string['language'] = 'Language';
