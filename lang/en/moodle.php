@@ -282,6 +282,7 @@ The essential one is the session cookie, usually called MoodleSession. You must 
 The other cookie is purely for convenience, usually called something like MOODLEID. It just remembers your username within the browser. This means when you return to this site the username field on the login page will be already filled out for you. It is safe to refuse this cookie - you will just have to retype your username every time you log in.';
 $string['cookiesnotenabled'] = 'Unfortunately, cookies are currently not enabled in your browser';
 $string['copy'] = 'copy';
+$string['copycourse'] = 'Copy a course';
 $string['copyasnoun'] = 'copy';
 $string['copyingcoursefiles'] = 'Copying course files';
 $string['copyingsitefiles'] = 'Copying site files used in course';
@@ -1084,7 +1085,8 @@ $string['jump'] = 'Jump';
 $string['jumpto'] = 'Jump to...';
 $string['keep'] = 'Keep';
 $string['keepsearching'] = 'Keep searching';
-$string['langltr'] = 'Language direction left-to-right';
+$string['keepmanualenrolmentsroles'] = 'Keep manual enrolments of role';
+$string['keepmanualenrolmentsroles_help'] = 'If enabled, persons now manually enrolled with those roles will also be manually enrolled in the copy of the course.';$string['langltr'] = 'Language direction left-to-right';
 $string['langrtl'] = 'Language direction right-to-left';
 $string['language'] = 'Language';
 $string['languagegood'] = 'This language pack is up-to-date! :-)';
