@@ -45,10 +45,10 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/str'
                 // Handler for "Copy course".
                 str.get_string('fullnamecourse').done(function(valuesCopyCourse) {
                     var trigger = $(SELECTOR.COPYCOURSE),
-                        courseId = trigger.attr('id');
+                        courseId = trigger.attr('data-courseid');
                     var modalBody = $('<div><label for="add_section_numsections"></label> ' +
                         '<input id="copyfullnamecourse" size="50" maxlength="254" value=""></div>');
-                    modalBody.find('label').html(valuesCopyCourse);
+                    modalBody.find('label').html(valuesCopyCourse + courseId);
                     ModalFactory.create({
                         title: M.util.get_string('copycourse', 'moodle'),
                         type: ModalFactory.types.SAVE_CANCEL,
@@ -56,27 +56,27 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/str'
                     }, trigger)
 
                     .done(function(modal) {
+                        modal.setSaveButtonText(M.util.get_string('copy', 'moodle'));
                         var numSections = $(modal.getBody()).find('#add_section_numsections'),
-                        addSections = function() {
+                        copyCourse = function() {
                             // Check if value of the "Number of sections" is a valid positive integer and redirect
                             // to adding a section script.
                             if ('' + parseInt(numSections.val()) === numSections.val() && parseInt(numSections.val()) >= 1) {
                                 document.location = trigger.attr('href') + '&numsections=' + parseInt(numSections.val());
                             }
                         };
-                        modal.setSaveButtonText(M.util.get_string('copy', 'moodle'));
                         modal.getRoot().on(ModalEvents.shown, function() {
                             // When modal is shown focus and select the input and add a listener to keypress of "Enter".
                             numSections.focus().select().on('keydown', function(e) {
                                 if (e.keyCode === KeyCodes.enter) {
-                                    addSections();
+                                    copyCourse();
                                 }
                             });
                         });
                         modal.getRoot().on(ModalEvents.save, function(e) {
-                            // When modal "Add" button is pressed.
+                            // When modal "Copy" button is pressed.
                             e.preventDefault();
-                            addSections();
+                            copyCourse();
                         });
                     });
                 });
