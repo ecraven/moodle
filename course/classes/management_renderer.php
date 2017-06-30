@@ -878,7 +878,7 @@ class core_course_management_renderer extends plugin_renderer_base {
         }
         $options = array();
         foreach ($actions as $action) {
-            $options[] = $this->action_link($action['url'], $action['string'], null, array('class' => $action['class']));
+            $options[] = $this->action_link($action['url'], $action['string'], null, $action['attributes']);
         }
         return html_writer::div(join(' | ', $options), 'listing-actions course-detail-listing-actions');
     }

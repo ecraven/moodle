@@ -334,9 +334,9 @@ class helper {
         // Copy.
         if ($course->can_restore()) {
             $actions[] = array(
-                'url' => new \moodle_url($baseurl, array('id' => $course->id)),
+                'url' => new \moodle_url($baseurl),
                 'icon' => new \pix_icon('t/copy', \get_string('duplicate')),
-                'attributes' => array('class' => 'action-copy')
+                'attributes' => array('class' => 'action-copy', 'data-courseid' => $course->id)
             );
         }
         // Delete.
@@ -390,7 +390,7 @@ class helper {
         if ($course->is_uservisible()) {
             $actions['view'] = array(
                 'url' => new \moodle_url('/course/view.php', array('id' => $course->id)),
-                'class' => '',
+                'attributes' => array(),
                 'string' => \get_string('view')
             );
         }
@@ -398,15 +398,15 @@ class helper {
         if ($course->can_edit()) {
             $actions['edit'] = array(
                 'url' => new \moodle_url('/course/edit.php', array('id' => $course->id)),
-                'class' => '',
+                'attributes' => array(),
                 'string' => \get_string('edit')
             );
         }
         // Copy.
         if ($course->can_restore()) {
             $actions[] = array(
-                'url' => new \moodle_url($baseurl, array('id' => $course->id)),
-                'class' => 'action-copy',
+                'url' => new \moodle_url($baseurl),
+                'attributes' => array('class' => 'action-copy', 'data-courseid' => $course->id),
                 'string' => \get_string('duplicate')
             );
         }
@@ -414,7 +414,7 @@ class helper {
         if ($course->can_review_enrolments()) {
             $actions['enrolledusers'] = array(
                 'url' => new \moodle_url('/enrol/users.php', array('id' => $course->id)),
-                'class' => '',
+                'attributes' => array(),
                 'string' => \get_string('enrolledusers', 'enrol')
             );
         }
@@ -422,7 +422,7 @@ class helper {
         if ($course->can_delete()) {
             $actions['delete'] = array(
                 'url' => new \moodle_url('/course/delete.php', array('id' => $course->id)),
-                'class' => '',
+                'attributes' => array(),
                 'string' => \get_string('delete')
             );
         }
@@ -431,13 +431,13 @@ class helper {
             if ($course->visible) {
                 $actions['hide'] = array(
                     'url' => new \moodle_url($baseurl, array('action' => 'hidecourse')),
-                    'class' => '',
+                    'attributes' => array(),
                     'string' => \get_string('hide')
                 );
             } else {
                 $actions['show'] = array(
                     'url' => new \moodle_url($baseurl, array('action' => 'showcourse')),
-                    'class' => '',
+                    'attributes' => array(),
                     'string' => \get_string('show')
                 );
             }
@@ -446,7 +446,7 @@ class helper {
         if ($course->can_backup()) {
             $actions['backup'] = array(
                 'url' => new \moodle_url('/backup/backup.php', array('id' => $course->id)),
-                'class' => '',
+                'attributes' => array(),
                 'string' => \get_string('backup')
             );
         }
@@ -454,7 +454,7 @@ class helper {
         if ($course->can_restore()) {
             $actions['restore'] = array(
                 'url' => new \moodle_url('/backup/restorefile.php', array('contextid' => $course->get_context()->id)),
-                'class' => '',
+                'attributes' => array(),
                 'string' => \get_string('restore')
             );
         }
