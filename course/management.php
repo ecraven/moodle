@@ -155,6 +155,9 @@ if (!$issearching && $category !== null) {
     }
 }
 
+$PAGE->requires->js_call_amd('core_course/copycourse', 'initCopyCourse');
+$PAGE->requires->strings_for_js(array('copycourse', 'copy', 'cancel'), 'moodle');
+
 $notificationspass = array();
 $notificationsfail = array();
 
