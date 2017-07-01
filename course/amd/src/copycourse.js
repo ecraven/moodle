@@ -23,63 +23,60 @@
  * @since      3.4
  */
 define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/str', 'core/url', 'core/yui',
-        'core/modal_factory', 'core/modal_events', 'core/key_codes'],
-    function($, ajax, templates, notification, str, url, Y, ModalFactory, ModalEvents, KeyCodes) {
-        "use strict";
+    'core/modal_factory', 'core/modal_events', 'core/key_codes'],
+  function ($, ajax, templates, notification, str, url, Y, ModalFactory, ModalEvents, KeyCodes) {
 
-        var CSS = {
-        };
-        var SELECTOR = {
-            COPYCOURSE: '.action-copy'
-        };
+    "use strict";
 
-        return /** @alias module:core_course/copycourse */ {
+    return /** @alias module:core_course/copycourse */ {
 
-            /**
-             * Initialises course copy
-             *
-             * @method init
-             */
-            initCopyCourse: function() {
+      /**
+       * Initialises course copy
+       *
+       * @method init
+       */
+      initCopyCourse: function () {
+        // Click handler for changing tag type.
+        $('body').delegate('.action-copy', 'click', function (e) {
+          e.preventDefault();
+          var target = $(this),
+            courseId = target.attr('data-courseid');
 
-                // Handler for "Copy course".
-                str.get_string('fullnamecourse').done(function(valuesCopyCourse) {
-                    var trigger = $(SELECTOR.COPYCOURSE),
-                        courseId = trigger.attr('data-courseid');
-                    var modalBody = $('<div><label for="add_section_numsections"></label> ' +
-                        '<input id="copyfullnamecourse" size="50" maxlength="254" value=""></div>');
-                    modalBody.find('label').html(valuesCopyCourse + courseId);
-                    ModalFactory.create({
-                        title: M.util.get_string('copycourse', 'moodle'),
-                        type: ModalFactory.types.SAVE_CANCEL,
-                        body: modalBody.html()
-                    }, trigger)
-
-                    .done(function(modal) {
-                        modal.setSaveButtonText(M.util.get_string('copy', 'moodle'));
-                        var numSections = $(modal.getBody()).find('#add_section_numsections'),
-                        copyCourse = function() {
-                            // Check if value of the "Number of sections" is a valid positive integer and redirect
-                            // to adding a section script.
-                            if ('' + parseInt(numSections.val()) === numSections.val() && parseInt(numSections.val()) >= 1) {
-                                document.location = trigger.attr('href') + '&numsections=' + parseInt(numSections.val());
-                            }
-                        };
-                        modal.getRoot().on(ModalEvents.shown, function() {
-                            // When modal is shown focus and select the input and add a listener to keypress of "Enter".
-                            numSections.focus().select().on('keydown', function(e) {
-                                if (e.keyCode === KeyCodes.enter) {
-                                    copyCourse();
-                                }
-                            });
-                        });
-                        modal.getRoot().on(ModalEvents.save, function(e) {
-                            // When modal "Copy" button is pressed.
-                            e.preventDefault();
-                            copyCourse();
-                        });
-                    });
-                });
+          var requests = ajax.call([{
+            methodname: 'core_course_get_courses',
+            args: {
+              options: {ids: {'id': courseId}}
             }
-        };
-    });
+          }], true);
+
+          requests[0].done(function () {
+            ModalFactory.create({
+              title: M.util.get_string('copycourse', 'moodle'),
+              body: '<div><label for="copyfullnamecourse">' + M.util.get_string('copycourse', 'moodle') + '</label>' +
+              '<input id="copyfullnamecourse" size="50" maxlength="254" value=""></div>',
+              type: ModalFactory.types.SAVE_CANCEL
+            }).done(function(modal) {
+              modal.setSaveButtonText(M.util.get_string('copy', 'moodle'));
+              modal.getRoot().on(ModalEvents.shown, function() {
+                // When modal is shown focus and select the input and add a listener to keypress of "Enter".
+/*
+                numSections.focus().select().on('keydown', function(e) {
+                  if (e.keyCode === KeyCodes.enter) {
+                    addSections();
+                  }
+                });
+*/
+              });
+              modal.getRoot().on(ModalEvents.save, function(e) {
+                // When modal "Add" button is pressed.
+                e.preventDefault();
+/*
+                addSections();
+*/
+              });
+            });
+          }.bind(this)).fail(notification.exception);
+        });
+      }
+    };
+  });
