@@ -1342,7 +1342,7 @@ class page_requirements_manager {
         // First include must be to a module with no dependencies, this prevents multiple requests.
         $prefix = "require(['core/first'], function() {\n";
         $suffix = "\n});";
-        $output .= html_writer::script($prefix . implode(";\n", $this->amdjscode) . $suffix);
+        $output .= html_writer::script($prefix . implode("\n", $this->amdjscode) . $suffix);
         return $output;
     }
 
