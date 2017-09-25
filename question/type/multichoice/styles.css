@@ -68,3 +68,16 @@ body#page-question-type-multichoice div[id^=fitem_id_][id*=feedback_] {
     border: 1px solid #bbb;
     border-top: 0;
 }
+label.qtype_multichoice_clearanswer {
+    display: block;
+    text-decoration: underline;
+    padding: .3em 0 .3em 0;
+    cursor: pointer;
+    visibility: hidden;
+}
+.answer.qtype_multichoice_answer-selected label.qtype_multichoice_clearanswer {
+    visibility: visible;
+}
+input.qtype_multichoice_clearanswer {
+    display: none;
+}

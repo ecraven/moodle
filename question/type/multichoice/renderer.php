@@ -129,13 +129,18 @@ abstract class qtype_multichoice_renderer_base extends qtype_with_combined_feedb
         $result .= html_writer::start_tag('div', array('class' => 'ablock'));
         $result .= html_writer::tag('div', $this->prompt(), array('class' => 'prompt'));
 
-        $result .= html_writer::start_tag('div', array('class' => 'answer'));
+        if ($qa->get_state() == question_state::$complete) {
+            $result .= html_writer::start_tag('div', array('class' => 'answer qtype_multichoice_answer-selected'));
+        } else {
+            $result .= html_writer::start_tag('div', array('class' => 'answer'));
+        }
+
         foreach ($radiobuttons as $key => $radio) {
             $result .= html_writer::tag('div', $radio . ' ' . $feedbackimg[$key] . $feedback[$key],
                     array('class' => $classes[$key])) . "\n";
         }
+        $result .= $question->clear_choices_option($qa, $this->page);
         $result .= html_writer::end_tag('div'); // Answer.
-
         $result .= html_writer::end_tag('div'); // Ablock.
 
         if ($qa->get_state() == question_state::$invalid) {

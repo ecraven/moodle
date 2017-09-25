@@ -234,7 +234,7 @@ class qtype_multichoice_single_question extends qtype_multichoice_base {
     }
 
     public function is_complete_response(array $response) {
-        return array_key_exists('answer', $response) && $response['answer'] !== '';
+        return array_key_exists('answer', $response) && $response['answer'] !== '' && $response['answer'] !== '-1';
     }
 
     public function is_gradable_response(array $response) {
@@ -263,10 +263,27 @@ class qtype_multichoice_single_question extends qtype_multichoice_base {
     }
 
     public function is_choice_selected($response, $value) {
-        return (string) $response === (string) $value;
+        if ((string) $value === '-1') {
+            return false;
+        } else {
+            return (string)$response === (string)$value;
+        }
+    }
+
+    /**
+     * Return the clear choices option code and calls require function.
+     * @param question_attempt $qa
+     * @param moodle_page $page
+     * @return string
+     */
+    public function clear_choices_option(question_attempt $qa, moodle_page $page) {
+        global $OUTPUT;
+        $page->requires->js_call_amd('qtype_multichoice/clearchoice', 'init');
+        $data = ['id' => $qa->get_qt_field_name('answer') . 'clear',
+            'name' => $qa->get_qt_field_name('answer')];
+        return $OUTPUT->render_from_template('qtype_multichoice/multichoice_clearchoice', $data);
     }
 }
-
 
 /**
  * Represents a multiple choice question where multiple choices can be selected.
@@ -496,5 +513,15 @@ class qtype_multichoice_multi_question extends qtype_multichoice_base {
 
     public function is_choice_selected($response, $value) {
         return !empty($response['choice' . $value]);
+    }
+
+    /**
+     * Return the clear choices option code which in the case of a qtype_multichoice_multi_question is empty.
+     * @param question_attempt $qa
+     * @param moodle_page $page
+     * @return string
+     */
+    public function clear_choices_option(question_attempt $qa, moodle_page $page) {
+        return '';
     }
 }
