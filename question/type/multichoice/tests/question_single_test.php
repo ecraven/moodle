@@ -38,7 +38,7 @@ class qtype_multichoice_single_question_test extends advanced_testcase {
 
     public function test_get_expected_data() {
         $question = test_question_maker::make_a_multichoice_single_question();
-        $this->assertEquals(array('answer' => PARAM_INT), $question->get_expected_data());
+        $this->assertEquals(array('answer' => PARAM_RAW), $question->get_expected_data());
     }
 
     public function test_is_complete_response() {

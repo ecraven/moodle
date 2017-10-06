@@ -409,6 +409,22 @@ class question_attempt {
     }
 
     /**
+     * Get the last step which has data as answer or _order of a particular question.
+     *
+     * @return string either 'answer' or '_order'.
+     */
+    public function get_unfinished_step() {
+        foreach ($this->get_reverse_step_iterator() as $step) {
+            $name = array('answer', '_order');
+            foreach ($name as $key) {
+                if ($step->has_qt_var($key)) {
+                    return $key;
+                }
+            }
+        }
+    }
+
+    /**
      * @return boolean whether this question_attempt has autosaved data from
      * some time in the past.
      */
@@ -503,7 +519,7 @@ class question_attempt {
      *      (Optional, defaults to null.)
      * @return mixed string value, or $default if it has never been set.
      */
-    public function get_last_qt_var($name, $default = null) {
+    public function get_last_qt_var($name, $default = '') {
         $step = $this->get_last_step_with_qt_var($name);
         if ($step->has_qt_var($name)) {
             return $step->get_qt_var($name);
@@ -1263,6 +1279,15 @@ class question_attempt {
     public function process_action($submitteddata, $timestamp = null, $userid = null, $existingstepid = null) {
         $pendingstep = new question_attempt_pending_step($submitteddata, $timestamp, $userid, $existingstepid);
         $this->discard_autosaved_step();
+
+        // While clearing the quiz option, we are trying to bring the question attempt step data to '_order'
+        // and we could find that '_order' data only in initial step i.e step[0]. This flags the question as
+        // Action: 'Started' and State: 'not yet finished' in response history.
+        if (empty($submitteddata)) {
+            $stepzerodata = $this->steps[0]->get_all_data();
+            $pendingstep->set_data($stepzerodata);
+        }
+
         if ($this->behaviour->process_action($pendingstep) == self::KEEP) {
             $this->add_step($pendingstep);
             if ($pendingstep->response_summary_changed()) {

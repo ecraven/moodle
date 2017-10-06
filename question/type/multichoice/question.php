@@ -172,7 +172,7 @@ class qtype_multichoice_single_question extends qtype_multichoice_base {
      * @return array variable name => PARAM_... constant.
      */
     public function get_expected_data() {
-        return array('answer' => PARAM_INT);
+        return array('answer' => PARAM_RAW);
     }
 
     public function summarise_response(array $response) {
@@ -234,7 +234,7 @@ class qtype_multichoice_single_question extends qtype_multichoice_base {
     }
 
     public function is_complete_response(array $response) {
-        return array_key_exists('answer', $response) && $response['answer'] !== '' && $response['answer'] !== '-1';
+        return array_key_exists('answer', $response) && $response['answer'] !== '' && $response['answer'] !== '';
     }
 
     public function is_gradable_response(array $response) {
@@ -258,12 +258,19 @@ class qtype_multichoice_single_question extends qtype_multichoice_base {
         return get_string('pleaseselectananswer', 'qtype_multichoice');
     }
 
+    /**
+     * Returns the last step.
+     *
+     * @param question_attempt $qa the question attempt.
+     * @return mixed string value, or $default if it has never been set.
+     */
     public function get_response(question_attempt $qa) {
-        return $qa->get_last_qt_var('answer', -1);
+        $laststepname = $qa->get_unfinished_step();
+        return $qa->get_last_qt_var($laststepname, '');
     }
 
     public function is_choice_selected($response, $value) {
-        if ((string) $value === '-1') {
+        if ((string) $value === '') {
             return false;
         } else {
             return (string)$response === (string)$value;

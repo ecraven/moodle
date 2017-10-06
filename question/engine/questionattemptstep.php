@@ -371,6 +371,15 @@ class question_attempt_step {
     }
 
     /**
+     * Setting step data.
+     *
+     * @param array $data the data in name => value pairs to set.
+     */
+    public function set_data($data) {
+        $this->data = $data;
+    }
+
+    /**
      * Set a metadata variable.
      *
      * Do not call this method directly from  your code. It is for internal
