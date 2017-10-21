@@ -1399,7 +1399,7 @@ function question_category_options($contexts, $top = false, $currentcat = 0,
     $categoriesarray = array();
     foreach ($pcontexts as $contextid) {
         $context = context::instance_by_id($contextid);
-        $contextstring = $context->get_context_name(true, true);
+        $contextstring = html_entity_decode($context->get_context_name(true, true), ENT_NOQUOTES);
         foreach ($categories as $category) {
             if ($category->contextid == $contextid) {
                 $cid = $category->id;
