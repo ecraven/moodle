@@ -344,6 +344,7 @@ $string['nolatesubmissions'] = 'No late submissions accepted. ';
 $string['nomoresubmissionsaccepted'] = 'Only allowed for participants who have been granted an extension';
 $string['none'] = 'None';
 $string['noonlinesubmissions'] = 'This assignment does not require you to submit anything online';
+$string['noonlinecommentssubmitted'] = 'No online comments were submitted.';
 $string['noopen'] = 'No open date';
 $string['nooverridedata'] = 'You must override at least one of the assignment settings.';
 $string['nosavebutnext'] = 'Next';
