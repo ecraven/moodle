@@ -191,6 +191,7 @@ EOD;
                     } else if ($converter->can_convert_format_to('html', 'pdf')) {
                         // Create a tmp stored_file from this html string.
                         $file = reset($file);
+                        $file = get_file_or_no_online_comment($file);
                         // Strip image tags, because they will not be resolvable.
                         $file = self::strip_images($file);
                         $record = new \stdClass();
@@ -798,4 +799,19 @@ EOD;
         return $fs->delete_area_files($contextid, $component, $filearea, $itemid);
     }
 
+    /**
+     * Get trimmed file or "no online comment" message.
+     *
+     * @param mixed $file
+     * @return stored_file|string
+     */
+    private static function get_file_or_no_online_comment($file) {
+        $file = trim($file);
+        if (empty($file)) {
+            return "<html><body><p><span>" . get_string('noonlinecommentssubmitted', 'assign')
+                . "</span></p></body></html>";
+        } else {
+            return $file;
+        }
+    }
 }
