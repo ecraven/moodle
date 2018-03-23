@@ -49,7 +49,7 @@ class filter_emoticon extends moodle_text_filter {
             return $text;
         }
         if (in_array($options['originalformat'], explode(',', get_config('filter_emoticon', 'formats')))) {
-            $this->replace_emoticons($text);
+            return $this->replace_emoticons($text);
         }
         return $text;
     }
@@ -62,9 +62,9 @@ class filter_emoticon extends moodle_text_filter {
      * Replace emoticons found in the text with their images
      *
      * @param string $text to modify
-     * @return void
+     * @return string the modified result
      */
-    protected function replace_emoticons(&$text) {
+    protected function replace_emoticons($text) {
         global $CFG, $OUTPUT, $PAGE;
         static $emoticontexts = array();    // internal cache used for replacing
         static $emoticonimgs = array();     // internal cache used for replacing
@@ -90,8 +90,10 @@ class filter_emoticon extends moodle_text_filter {
         }
 
         // detect all the <script> zones to take out
+        // Detect all the <span class="nolink"> zones to take out, too.
         $excludes = array();
         preg_match_all('/<script language(.+?)<\/script>/is', $text, $listofexcludes);
+        preg_match_all('/<span class="nolink"(.+?)<\/span>/is', $text, $listofexcludes);
 
         // take out all the <script> zones from text
         foreach (array_unique($listofexcludes[0]) as $key => $value) {
@@ -108,5 +110,6 @@ class filter_emoticon extends moodle_text_filter {
         if ($excludes) {
             $text = str_replace(array_keys($excludes), $excludes, $text);
         }
+        return $text;
     }
 }
