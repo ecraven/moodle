@@ -9262,6 +9262,14 @@ body.path-question-type .fitem_fgroup .accesshide {
   position: static;
   padding-right: .3em;
 }
+body.path-question-type .fitem_fgroup .accesshide[for="id_filetypeslist"] {
+  /* But not the filetypeslist label. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+}
 .que {
   clear: left;
   text-align: left;
