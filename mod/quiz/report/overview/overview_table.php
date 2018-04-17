@@ -34,6 +34,8 @@ require_once($CFG->dirroot . '/mod/quiz/report/attemptsreport_table.php');
  * @copyright 2008 Jamie Pratt
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+// Taken from
 class quiz_overview_table extends quiz_attempts_report_table {
 
     protected $regradedqs = array();
