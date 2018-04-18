@@ -286,6 +286,21 @@ class registration {
     }
 
     /**
+     * Updates site registration when "Forget registration" button is clicked by admin
+     */
+    public static function forget_registration() {
+        global $DB;
+
+        if (!$registration = self::get_registration()) {
+            return false;
+        }
+
+        $DB->delete_record('registration_hubs', ['id' => $registration->id]);
+        self::$registration = null;
+        return true;
+    }
+
+    /**
      * Updates site registration via cron
      *
      * @throws moodle_exception

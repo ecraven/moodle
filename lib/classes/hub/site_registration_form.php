@@ -170,6 +170,14 @@ class site_registration_form extends \moodleform {
 
         $this->add_action_buttons(false, $buttonlabel);
 
+        // Check if it's a first registration or update.
+        if (registration::is_registered()) {
+            $buttonlabel = get_string('forgetregistration', 'hub');
+            $mform->addElement('hidden', 'forget', true);
+            $mform->setType('forget', PARAM_BOOL);
+        }
+        $this->add_action_buttons(false, $buttonlabel);
+
         $mform->addElement('hidden', 'returnurl');
         $mform->setType('returnurl', PARAM_LOCALURL);
 

@@ -83,6 +83,7 @@ $string['errorws'] = '{$a}';
 $string['existingscreenshotnumber'] = '{$a} existing screenshots. You will be able to see these screenshots on this page, only once the Moodle.net administrator enables your course.';
 $string['errorregistrationupdate'] = 'An error occurred during registration update ({$a})';
 $string['existingscreenshots'] = 'Existing screenshots';
+$string['forgetregistration'] = 'Forget registration';
 $string['geolocation'] = 'Geolocation';
 $string['geolocation_help'] = 'In future we may provide location-based searching. If you want to specify the location for your course use a latitude/longitude value here (eg: -31.947884,115.871285).  One way to find this is to use Google Maps.';
 $string['imageurl'] = 'Image URL';
