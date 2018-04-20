@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/quiz/report/attemptsreport.php');
 require_once($CFG->dirroot . '/mod/quiz/report/reportlib.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
+require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
 require_once($CFG->libdir . '/pagelib.php');
 
 /**
@@ -71,7 +72,7 @@ class quiz_archive_report extends quiz_default_report {
         // Get the list of questions in this quiz.
         $this->questions = quiz_report_get_significant_questions($quiz);
         if ($slot && !array_key_exists($slot, $this->questions)) {
-            throw new moodle_exception('unknownquestion', 'quiz_grading');
+            throw new moodle_exception('unknownquestion', 'quiz_archive');
         }
 
         $hasquestions = quiz_has_questions($quiz->id);
@@ -130,6 +131,7 @@ class quiz_archive_report extends quiz_default_report {
     protected function quiz_report_get_student_attempt($attemptid, $userid) {
         global $DB, $PAGE;
         $attemptobj = quiz_create_attempt_handling_errors($attemptid, $this->cm->id);
+
         // Summary table start.
         // ============================================================================.
 
@@ -259,7 +261,37 @@ class quiz_archive_report extends quiz_default_report {
         $renderer = $PAGE->get_renderer('mod_quiz');
         $string = '';
         $string .= $renderer->review_summary_table($summarydata, 0);
-        $string .= $renderer->questions($attemptobj, true, $slots, 0, false, $options);
+
+        // Display the questions. The overall goal is to have question_display_options from question/engine/lib.php
+        // set so they would show what we wand and not show what we don't want.
+
+        // Here we would call questions function on the renderer from mod/quiz/renderer.php but instead we do this
+        // manually.
+        foreach ($slots as $slot) {
+            // Here we would call render_question_helper function on the quiz_attempt from mod/quiz/renderer.php but
+            // instead we do this manually.
+
+            $originalslot = $attemptobj->get_original_slot($slot);
+            $number = $attemptobj->get_question_number($originalslot);
+            $displayoptions = $attemptobj->get_display_options_with_edit_link(true, $slot, "");
+            $displayoptions->marks = 2;
+            $displayoptions->manualcomment = 1;
+            $displayoptions->feedback = 1;
+            $displayoptions->history = true;
+            $displayoptions->correctness = 1;
+            $displayoptions->numpartscorrect = 1;
+            $displayoptions->flags = 1;
+            $displayoptions->manualcommentlink = 0;
+
+            if ($slot != $originalslot) {
+                $attemptobj->get_question_attempt($slot)->set_max_mark(
+                    $attemptobj->get_question_attempt($originalslot)->get_max_mark());
+            }
+            $quba = question_engine::load_questions_usage_by_activity($attemptobj->get_uniqueid());
+            $string .= $quba->render_question($slot, $displayoptions, $number);
+
+        }
+
         return $string;
     }
 }
