@@ -1,3 +1,6 @@
 [submodule "local/codechecker"]
 	path = local/codechecker
-	url = https://github.com/moodlehq/moodle-local_codechecker
+	url = https://github.com/moodle/hq/moodle-local_codechecker
+[submodule "local/moodlecheck"]
+	path = local/moodlecheck
+	url = https://github.com/moodlehq/moodle-local_moodlecheck
