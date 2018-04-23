@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/quiz/report/attemptsreport.php');
 require_once($CFG->dirroot . '/mod/quiz/report/attemptsreport_options.php');
+require_once($CFG->dirroot . '/mod/quiz/report/handout/locallib.php');
 
 /**
  * Quiz report subclass for the handout report.
@@ -47,7 +48,12 @@ class quiz_handout_report extends quiz_attempts_report {
     public function display($quiz, $cm, $course) {
         global $DB, $OUTPUT, $PAGE;
 
+        raise_memory_limit(MEMORY_HUGE);
+
         $options = new mod_quiz_attempts_report_options('handout', $quiz, $cm, $course);
+
+        // Work out the display options.
+        $download = optional_param('download', -1, PARAM_INT);
 
         // Load the required questions.
         $questions = quiz_report_get_significant_questions($quiz);
@@ -56,8 +62,40 @@ class quiz_handout_report extends quiz_attempts_report {
         $courseshortname = format_string($course->shortname, true,
                 array('context' => context_course::instance($course->id)));
         $filename = quiz_report_download_filename(get_string('handoutfilename', 'quiz_handout'),
-                $courseshortname, $quiz->name);
+                $courseshortname, $quiz->name) . ".doc";
 
+        if ($download != -1) {
+            /*
+             * @var string export template with Word-compatible CSS style definitions
+             */
+            $wordfiletemplate = 'wordfiletemplate.html';
+
+            /*
+             * @var string Stylesheet to export XHTML into Word-compatible XHTML
+             */
+            $exportstylesheet = 'xhtml2wordpass2.xsl';
+
+            // XHTML template for Word file CSS styles formatting.
+            $htmltemplatefilepath = __DIR__ . "/" . $wordfiletemplate;
+            $stylesheet = __DIR__ . "/" . $exportstylesheet;
+
+            // Read the title and introduction into a string, embedding images.
+            $booktext = '<p class="MsoTitle">' . "blah title" . "</p>\n";
+            $booktext .= '<div class="chapter" id="intro">' . "blah intro";
+//            $booktext .= booktool_wordimport_base64_images($context->id, 'intro');
+            $booktext .= "</div>\n";
+
+            // Append all the chapters to the end of the string, again embedding images.
+                $booktext .= '<div class="chapter" id="' . "blah chapter" . '">';
+                // Check if the chapter title is duplicated inside the content, and include it if not.
+                $booktext .= "Blah content";
+//                $booktext .= booktool_wordimport_base64_images($context->id, 'chapter', $chapter->id);
+                $booktext .= "</div>\n";
+
+            $docxcontent = booktool_wordimport_export($booktext);
+            send_file($docxcontent, $filename, 10, 0, true, array('filename' => $filename));
+            die;
+        }
         $hasstudents = true;
 
         $hasquestions = quiz_has_questions($quiz->id);
