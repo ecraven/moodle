@@ -50,6 +50,9 @@ class quiz_handout_report extends quiz_attempts_report {
 
         raise_memory_limit(MEMORY_HUGE);
 
+        // The stuff to display.
+        $todisplay = "";
+
         $options = new mod_quiz_attempts_report_options('handout', $quiz, $cm, $course);
 
         // Work out the display options.
@@ -70,6 +73,12 @@ class quiz_handout_report extends quiz_attempts_report {
 
         $popup = $isteacher ? 0 : $quiz->popup; // Controls whether this is shown in a javascript-protected window.
 
+        $todisplay .= $this->writehandout($quiz, $cm, true);
+
+        $hasstudents = true;
+
+        $hasquestions = quiz_has_questions($quiz->id);
+
         if ($download != -1) {
             /*
              * @var string export template with Word-compatible CSS style definitions
@@ -86,15 +95,15 @@ class quiz_handout_report extends quiz_attempts_report {
             $stylesheet = __DIR__ . "/" . $exportstylesheet;
 
             // Read the title and introduction into a string, embedding images.
-            $htmloutput = '<p class="MsoTitle">' . "blah title" . "</p>\n";
-            $htmloutput .= '<div class="chapter" id="intro">' . "blah intro";
+            $htmloutput = '<p class="MsoTitle">' . $this->get_quiz_title($quiz) . "</p>\n";
+            $htmloutput .= '<div class="chapter" id="intro">' . $this->get_name_table();
 //            $exporttext .= booktool_wordimport_base64_images($context->id, 'intro');
             $htmloutput .= "</div>\n";
 
             // Append all the chapters to the end of the string, again embedding images.
             $htmloutput .= '<div class="chapter" id="' . "blah chapter" . '">';
                 // Check if the chapter title is duplicated inside the content, and include it if not.
-            $htmloutput .= "Blah content";
+            $htmloutput .= $todisplay;
 //                $exporttext .= booktool_wordimport_base64_images($context->id, 'chapter', $chapter->id);
             $htmloutput .= "</div>\n";
 
@@ -104,19 +113,12 @@ class quiz_handout_report extends quiz_attempts_report {
             $docxcontent = booktool_wordimport_export($htmloutput);
             send_file($docxcontent, $filename, 10, 0, true, array('filename' => $filename));
             die;
-        }
-        $hasstudents = true;
-
-        $hasquestions = quiz_has_questions($quiz->id);
-
-        $this->print_header_and_tabs($cm, $course, $quiz, $this->mode);
-
-        if ($download == -1) {
+        } else {
+            $this->print_header_and_tabs($cm, $course, $quiz, $this->mode);
             echo "<p><a href='" . $_SERVER["REQUEST_URI"] . "&download=1' />Download doc (Word compatible)</a></p>";
+            echo $this->get_name_table();
+            echo $todisplay;
         }
-
-        // Print the display options.
-        echo json_encode($this->quiz_report_get_all_questions($quiz));
         return true;
     }
 
@@ -126,7 +128,7 @@ class quiz_handout_report extends quiz_attempts_report {
      * @return array of slot => $question object with fields
      *      ->slot, ->id, ->maxmark, ->length, ->number.
      */
-    public function quiz_report_get_all_questions($quiz) {
+    public function quiz_report_get_all_question_slots($quiz) {
         global $DB;
 
         $qsbyslot = $DB->get_records_sql("
@@ -155,39 +157,33 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Write the handout.
      *
-     * @param array $questionheaders the question headers.
-     * @param bool $showheader whether to show the question headers.
+     * @param object $quiz this quiz.
+     * @param object $cm the course module for this quiz.
      * @return string the handout to display or print to doc.
      * @throws coding_exception
      */
-    public function writehandout($questionheaders, $showheader = true) {
+    public function writehandout($quiz, $cm) {
         global $OUTPUT, $quiz, $displayoptions;
+
+        $questionheaders = array();
         $solutions = false;
-        $questions = quiz_report_get_all_questions($quiz);
+        $questionslots = $this->quiz_report_get_all_question_slots($quiz);
 
         /* bsl3 following code from /mod/quiz/review.php */
         /* rlm1 collect generated HTML */
 
         $fulltext = "";
 
-        // Print heading.
-        if ($showheader = true) {
-            $fulltext .= $OUTPUT->heading(format_string($quiz->name));
-        }
-        $fulltext .= '<table>
-                <tr><td>'.get_string('lastname', 'moodle').'</td><td>...........................................</td></tr>
-                <tr><td>'.get_string('firstname', 'moodle').'</td><td>...........................................</td></tr>
-                <tr><td>'.get_string('username', 'moodle').'</td><td>...........................................</td></tr>
-              </table><br />';
-
-        // $fulltext .= $OUTPUT->heading(format_string($quiz->name));
         $questionpointer = 0;
-        foreach ($questions as $q) {
-            $question = question_bank::load_question($q->id);
-            $questiondata = question_bank::load_question_data($q->id);
+        foreach ($questionslots as $qs) {
+            $question = question_bank::load_question($qs->id);
+            $questiondata = question_bank::load_question_data($qs->id);
+            $questionheaders[] = get_string('question', 'quiz')." ". $qs->number . " (" .
+                number_format($qs->maxmark, 2) . " ".get_string('marks', 'quiz').")";
 
-            $text = question_rewrite_question_preview_urls($this->formatquestiondata($questiondata), $question->contextid,
-                'quiz_statistics', $question->id);
+            $text = question_rewrite_question_preview_urls($this->formatquestiondata($questiondata), $question->id,
+                $question->contextid, 'question', 'questiontext', $question->id,
+                $cm->id, 'quiz_handout');
 
             if (trim($text) != '') {
                 // Rlm1 Check if element is description, not question ...
@@ -201,7 +197,7 @@ class quiz_handout_report extends quiz_attempts_report {
 
                     if (isset($question->responseformat)) {
                         /* white fields for editor answers with lines equal to responsefieldlines */
-                        if ($question->responseformat == "editor") {
+                        if ($question->responseformat == "editor" OR $question->responseformat == "monospaced") {
                             if ($solutions) { /* solution */
                                 $boxtext = get_string('singlesolution', 'quiz_handout') . ":<br />\n";
                                 /* this are the graderinfo informations, as there is no such thing as solution to the essay question
@@ -304,7 +300,7 @@ class quiz_handout_report extends quiz_attempts_report {
         } else {
             // Not random question context.
             $questiontext = $this->getquestiontext($questiondata);
-            // from here on the single question types.
+            // From here on the single question types.
             switch ($questiondata->qtype) {
                 case 'multianswer':
                     $this->processclozequestion($questiondata, $solutions);
@@ -1376,5 +1372,44 @@ class quiz_handout_report extends quiz_attempts_report {
         }
         ksort($dataitems);
         return $dataitems;
+    }
+
+    /**
+     * Get the name table.
+     *
+     * @return string the name table
+     * @throws coding_exception
+     */
+    public function get_name_table() {
+        return '<table>
+                <tr><td>' . get_string('lastname', 'moodle') .
+                    '</td><td>&#160;&#160;...........................................</td></tr>' .
+                '<tr><td>' . get_string('firstname', 'moodle') .
+                    '</td><td>&#160;&#160;...........................................</td></tr>' .
+                '<tr><td>' . get_string('username', 'moodle') .
+                    '</td><td>&#160;&#160;...........................................</td></tr>' .
+              '</table><br />';
+    }
+
+    /**
+     * Get the quiz title.
+     *
+     * @param object $quiz this quiz.
+     * @return string the quiz title to display or print to doc.
+     * @throws coding_exception
+     */
+    public function get_quiz_title($quiz) {
+        global $OUTPUT;
+        return $OUTPUT->heading(format_string($quiz->name));
+    }
+
+    /**
+     * Return a placeholder
+     *
+     * @param string $val
+     * @return string
+     */
+    public function placeholders($val) {
+        return '/\{' . $val . '}/';
     }
 }
