@@ -115,7 +115,7 @@ class quiz_handout_report extends quiz_attempts_report {
             die;
         } else {
             $this->print_header_and_tabs($cm, $course, $quiz, $this->mode);
-            echo "<p><a href='" . $_SERVER["REQUEST_URI"] . "&download=1' />Download doc (Word compatible)</a></p>";
+            echo "<div role='navigation'><a href='" . $_SERVER["REQUEST_URI"] . "&download=1' />Download doc (Word compatible)</a><br/>&#160;</div>";
             echo $this->get_name_table();
             echo $todisplay;
         }
