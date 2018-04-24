@@ -79,7 +79,7 @@ class quiz_handout_report extends quiz_attempts_report {
 
         $hasquestions = quiz_has_questions($quiz->id);
 
-        if ($download != -1) {
+        if ($download == 1) {
             /*
              * @var string export template with Word-compatible CSS style definitions
              */
@@ -97,14 +97,14 @@ class quiz_handout_report extends quiz_attempts_report {
             // Read the title and introduction into a string, embedding images.
             $htmloutput = '<p class="MsoTitle">' . $this->get_quiz_title($quiz) . "</p>\n";
             $htmloutput .= '<div class="chapter" id="intro">' . $this->get_name_table();
-//            $exporttext .= booktool_wordimport_base64_images($context->id, 'intro');
+            // $htmloutput .= booktool_wordimport_base64_images($context->id, 'intro');
             $htmloutput .= "</div>\n";
 
             // Append all the chapters to the end of the string, again embedding images.
             $htmloutput .= '<div class="chapter" id="' . "blah chapter" . '">';
-                // Check if the chapter title is duplicated inside the content, and include it if not.
+            // Check if the chapter title is duplicated inside the content, and include it if not.
             $htmloutput .= $todisplay;
-//                $exporttext .= booktool_wordimport_base64_images($context->id, 'chapter', $chapter->id);
+            // $htmloutput .= booktool_wordimport_base64_images($context->id, 'chapter', $chapter->id);
             $htmloutput .= "</div>\n";
 
             $htmloutput = str_replace ('<input type="checkbox" />',
@@ -115,7 +115,8 @@ class quiz_handout_report extends quiz_attempts_report {
             die;
         } else {
             $this->print_header_and_tabs($cm, $course, $quiz, $this->mode);
-            echo "<div role='navigation'><a href='" . $_SERVER["REQUEST_URI"] . "&download=1' />Download doc (Word compatible)</a><br/>&#160;</div>";
+            echo "<div role='navigation'><a href='" . $PAGE->url . "&download=1' />" .
+                get_string('handoutdownload', 'quiz_handout') . "</a><br/>&#160;</div>";
             echo $this->get_name_table();
             echo $todisplay;
         }
@@ -1077,7 +1078,6 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processnumericalquestion($questiondata, $solutions = false) {
         // Numerical question type.
         global $CFG, $DB, $questiontext, $replacearray;
-        echo json_encode($questiondata);
         if (get_class($questiondata) == 'stdClass') {
             $numericalquestionoptionsanswerscount = count($questiondata->options->answers);
         }
@@ -1162,12 +1162,20 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processmatchingquestion($questiondata, $solutions = false) {
         // Matching question type.
         global $questiontext;
+//        echo "----------------------------------------------\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+//        echo json_encode($questiontext);
+//        echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n----------------------------------------------";
+//        echo "----------------------------------------------\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+//        echo json_encode($questiondata);
+//        echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n----------------------------------------------";
         $matchoptionnumbering = 0;
         $matchoptionstring = "";
         $matchoptions = array();
-        $size = 0;
+        // Input field should be at least size 3.
+        $size = 3;
         if (get_class($questiondata) == 'stdClass') {
-            foreach ($questiondata->options->subquestions as $answer) { /* looking for the largest option */
+            foreach ($questiondata->options->subquestions as $answer) {
+                // Looking for the largest option.
                 if (trim($answer->questiontext) != '') {
                     $answeroption = $answer->answertext;
                     if (strlen((string)$answeroption) > $size) {
@@ -1175,41 +1183,36 @@ class quiz_handout_report extends quiz_attempts_report {
                     }
                 }
             }
-            /* input field should be at least size 3 */
-            if ($size <= 3) {
-                $size = 3;
-            }
             foreach ($questiondata->options->subquestions as $answer) {
                 $matchoptions[] = $answer->answertext;
                 if (trim($answer->questiontext) != '') {
                     $questiontext .= "<p>";
-                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->questiontext); /* remove outer <p> </p> */
+                    // Remove outer <p> </p>.
+                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->questiontext);
                     $questiontext .= "\n";
                     $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
                         "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
                 }
             }
             if ($questiondata->options->shuffleanswers == 1) {
-                /* shuffle the array */
+                // Shuffle the array.
                 shuffle($matchoptions);
             }
         }
         if (get_class($questiondata) == 'qtype_match_question') {
-            foreach ($questiondata->choices as $choice) { /* looking for the largest option */
+            foreach ($questiondata->choices as $choice) {
+                // Looking for the largest option.
                 if (trim($choice) != '') {
                     if (strlen((string)$choice) > $size) {
                         $size = strlen((string)$choice);
                     }
                 }
             }
-            /* input field should be at least size 3 */
-            if ($size <= 3) {
-                $size = 3;
-            }
             foreach ($questiondata->stems as $question) {
                 if (trim($question) != '') {
                     $questiontext .= "<p>";
-                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $question); /* remove outer <p> </p> */
+                    // Remove outer <p> </p>.
+                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $question);
                     $questiontext .= "\n";
                     $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
                         "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
@@ -1219,7 +1222,7 @@ class quiz_handout_report extends quiz_attempts_report {
                 $matchoptions[] = $choice;
             }
             if ($questiondata->shufflestems = 1) {
-                /* shuffle the array */
+                // Shuffle the array.
                 shuffle($matchoptions);
             }
         }
@@ -1257,17 +1260,17 @@ class quiz_handout_report extends quiz_attempts_report {
         $kprimeresponse1 = $questiondata->responsetext_1;
         $kprimeresponse2 = $questiondata->responsetext_2;
 
-        if ($questiondata->options->shuffleoptions == 1) {
+        if ($questiondata->options->shuffleanswers == 1) {
             /* shuffle the array */
             shuffle($kprimeoptions);
         }
         foreach ($kprimeoptions as $kprimeoption) {
             if ($kprimeoptionnumbering == 0) {
                 $kprimeoptionstring .= "<p>$kprimeresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
-                    "<input type=\"checkbox\" />$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $kprimeoption . "</p>\n";
+                    "<input type=\"checkbox\" />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $kprimeoption . "</p>\n";
             } else {
                 $kprimeoptionstring .= "<p>$kprimeresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
-                    "<input type=\"checkbox\" />$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $kprimeoption . "</p>\n";
+                    "<input type=\"checkbox\" />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $kprimeoption . "</p>\n";
             }
             $kprimeoptionnumbering++;
         }

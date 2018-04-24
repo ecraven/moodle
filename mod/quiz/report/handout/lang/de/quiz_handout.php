@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'quiz_handout', language 'en', branch 'MOODLE_34_STABLE'
+ * Strings for component 'quiz_handout', language 'de', branch 'MOODLE_34_STABLE'
  *
  * @package   quiz_handout
  * @copyright 2018 Luca Bösch <luca.boesch@bfh.ch>
@@ -40,15 +40,15 @@ $string['onlyoneattemptallowed'] = 'Only one attempt per user allowed on this qu
 $string['optallattempts'] = 'all attempts';
 $string['optallstudents'] = 'all {$a} who have or have not attempted the quiz';
 $string['optattemptsonly'] = '{$a} who have attempted the quiz';
-$string['options'] = 'Options';
+$string['options'] = 'Auswahl';
 $string['optnoattemptsonly'] = '{$a} who have not attempted the quiz';
 $string['optonlyregradedattempts'] = 'that have been regraded / are marked as needing regrading';
-$string['handout'] = 'Handout';
-$string['handoutdownload'] = 'Download doc (Word compatible)';
-$string['handoutfilename'] = 'Handout';
-$string['handoutreport'] = 'Handout';
+$string['handout'] = 'Papierversion';
+$string['handoutdownload'] = 'Download doc (Word-Kompatibel)';
+$string['handoutfilename'] = 'Papierversion';
+$string['handoutreport'] = 'Papierversion';
 $string['pagesize'] = 'Page size';
-$string['pluginname'] = 'Handout';
+$string['pluginname'] = 'Papierversion';
 $string['preferencespage'] = 'Preferences just for this page';
 $string['preferencessave'] = 'Show report';
 $string['preferencesuser'] = 'Your preferences for this report';
