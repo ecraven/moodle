@@ -175,45 +175,53 @@ class quiz_handout_report extends quiz_attempts_report {
         $fulltext = "";
 
         $questionpointer = 0;
+        $quizobj = quiz::create($quiz->id);
+        $structure = $quizobj->get_structure();
+
         foreach ($questionslots as $qs) {
-            $question = question_bank::load_question($qs->id);
-            $questiondata = question_bank::load_question_data($qs->id);
-            $questionheaders[] = get_string('question', 'quiz')." ". $qs->number . " (" .
-                number_format($qs->maxmark, 2) . " ".get_string('marks', 'quiz').")";
+            // Do load_question only if the according qtype is installed.
+            if ($structure->get_question_type_for_slot($qs->slot) === "missingtype") {
+                continue;
+            } else {
+                $question = question_bank::load_question($qs->id);
+                $questiondata = question_bank::load_question_data($qs->id);
+                $questionheaders[] = get_string('question', 'quiz')." ". $qs->number . " (" .
+                    number_format($qs->maxmark, 2) . " ".get_string('marks', 'quiz').")";
 
-            $text = question_rewrite_question_preview_urls($this->formatquestiondata($questiondata), $question->id,
-                $question->contextid, 'question', 'questiontext', $question->id,
-                $cm->id, 'quiz_handout');
+                $text = question_rewrite_question_preview_urls($this->formatquestiondata($questiondata), $question->id,
+                    $question->contextid, 'question', 'questiontext', $question->id,
+                    $cm->id, 'quiz_handout');
 
-            if (trim($text) != '') {
-                // Rlm1 Check if element is description, not question ...
-                if ($questiondata->qtype == "description") {
-                    $fulltext .= "<h1>" . $questiondata->name . "</h1><p>" . $text . "</p>";
-                } else {
-                    $fulltext .= "<h2>" . $questionheaders[$questionpointer++] . "</h2>";
+                if (trim($text) != '') {
+                    // Rlm1 Check if element is description, not question ...
+                    if ($questiondata->qtype == "description") {
+                        $fulltext .= "<h1>" . $questiondata->name . "</h1><p>" . $text . "</p>";
+                    } else {
+                        $fulltext .= "<h2>" . $questionheaders[$questionpointer++] . "</h2>";
 
-                    $fulltext .= $OUTPUT->box(format_text($text, $question->questiontextformat, array('noclean' => true,
-                        'para' => false, 'overflowdiv' => true)), 'questiontext boxaligncenter generalbox');
+                        $fulltext .= $OUTPUT->box(format_text($text, $question->questiontextformat, array('noclean' => true,
+                            'para' => false, 'overflowdiv' => true)), 'questiontext boxaligncenter generalbox');
 
-                    if (isset($question->responseformat)) {
-                        /* white fields for editor answers with lines equal to responsefieldlines */
-                        if ($question->responseformat == "editor" OR $question->responseformat == "monospaced") {
-                            if ($solutions) { /* solution */
-                                $boxtext = get_string('singlesolution', 'quiz_handout') . ":<br />\n";
-                                /* this are the graderinfo informations, as there is no such thing as solution to the essay question
-                                 * type */
-                                $boxtext .= $question->graderinfo;
-                            } else { /* Handout. */
-                                $boxtext = "";
-                                if ($question->responsefieldlines != 0) {
-                                    for ($i = 0; $i < $question->responsefieldlines; $i++) {
-                                        $boxtext .= "<br />";
+                        if (isset($question->responseformat)) {
+                            /* white fields for editor answers with lines equal to responsefieldlines */
+                            if ($question->responseformat == "editor" OR $question->responseformat == "monospaced") {
+                                if ($solutions) { /* solution */
+                                    $boxtext = get_string('singlesolution', 'quiz_handout') . ":<br />\n";
+                                    /* this are the graderinfo informations, as there is no such thing as solution to the essay question
+                                     * type */
+                                    $boxtext .= $question->graderinfo;
+                                } else { /* Handout. */
+                                    $boxtext = "";
+                                    if ($question->responsefieldlines != 0) {
+                                        for ($i = 0; $i < $question->responsefieldlines; $i++) {
+                                            $boxtext .= "<br />";
+                                        }
                                     }
                                 }
+                                $fulltext .= "\n";
+                                $fulltext .= "<div class=\"box\" style=\"border: 1px dashed #000000; padding: 10px; ";
+                                $fulltext .= "margin-bottom: 15px;\">$boxtext</div>";
                             }
-                            $fulltext .= "\n";
-                            $fulltext .= "<div class=\"box\" style=\"border: 1px dashed #000000; padding: 10px; ";
-                            $fulltext .= "margin-bottom: 15px;\">$boxtext</div>";
                         }
                     }
                 }
