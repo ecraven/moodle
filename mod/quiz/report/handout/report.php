@@ -1077,6 +1077,7 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processnumericalquestion($questiondata, $solutions = false) {
         // Numerical question type.
         global $CFG, $DB, $questiontext, $replacearray;
+        echo json_encode($questiondata);
         if (get_class($questiondata) == 'stdClass') {
             $numericalquestionoptionsanswerscount = count($questiondata->options->answers);
         }
@@ -1084,28 +1085,27 @@ class quiz_handout_report extends quiz_attempts_report {
             $numericalquestionoptionsanswerscount = count($questiondata->answers);
         }
         if ($numericalquestionoptionsanswerscount > 0) {
+            $size = 3;
             if (get_class($questiondata) == 'stdClass') {
                 foreach ($questiondata->options->answers as $answer) {
-                    /* input field should be at least size 3 */
-                    if (strlen((string)$answer->answer) <= 3) {
-                        $size = 3;
-                    } else {
+                    // Input field should be at least size 3, but only one (and the longest) in case of multiple correct
+                    // responses.
+                    if ((strlen((string)$answer->answer)) > $size) {
                         $size = strlen((string)$answer->answer);
                     }
-                    $questiontext .= "<input type=\"text\" size=\"$size\" style=\"border: 1px dashed #000000; height: 24px;\">";
                 }
             }
             if (get_class($questiondata) == 'qtype_numerical_question') {
                 foreach ($questiondata->answers as $answer) {
-                    /* input field should be at least size 3 */
-                    if (strlen((string)$answer->answer) <= 3) {
-                        $size = 3;
-                    } else {
+                    // Input field should be at least size 3, but only one (and the longest) in case of multiple correct
+                    // responses.
+                    if ((strlen((string)$answer->answer)) > $size) {
                         $size = strlen((string)$answer->answer);
                     }
-                    $questiontext .= "<input type=\"text\" size=\"$size\" style=\"border: 1px dashed #000000; height: 24px;\">";
                 }
             }
+            $questiontext .= "<p><input type=\"text\" size=\"$size\" style=\"border: 1px dashed #000000; " .
+                "height: 24px;\"></p>\n";
         }
     }
 
