@@ -58,17 +58,17 @@ function booktool_wordimport_export( $content ) {
 
     // Check that XSLT is installed, and the XSLT stylesheet and XHTML template are present.
     if (!class_exists('XSLTProcessor') || !function_exists('xslt_create')) {
-        echo $OUTPUT->notification(get_string('xsltunavailable', 'booktool_wordimport'));
+        echo $OUTPUT->notification(get_string('xsltunavailable', 'quiz_handout'));
         return false;
     } else if (!file_exists($stylesheet)) {
         // Stylesheet to transform Moodle Question XML into Word doesn't exist.
-        echo $OUTPUT->notification(get_string('stylesheetunavailable', 'booktool_wordimport', $stylesheet));
+        echo $OUTPUT->notification(get_string('stylesheetunavailable', 'quiz_handout', $stylesheet));
         return false;
     }
 
     // Get a temporary file name for storing the book/chapter XHTML content to transform.
     if (!($tempxmlfilename = tempnam($CFG->tempdir . DIRECTORY_SEPARATOR, "b2w-"))) {
-        echo $OUTPUT->notification(get_string('cannotopentempfile', 'booktool_wordimport', basename($tempxmlfilename)));
+        echo $OUTPUT->notification(get_string('cannotopentempfile', 'quiz_handout', basename($tempxmlfilename)));
         return false;
     }
     unlink($tempxmlfilename);
@@ -98,7 +98,7 @@ function booktool_wordimport_export( $content ) {
         'moodle_username' => $USER->username,
         'debug_flag' => debugging('', DEBUG_WORDIMPORT),
         'heading1stylelevel' => $heading1styleoffset,
-        'transformationfailed' => get_string('transformationfailed', 'booktool_wordimport', $exportstylesheet)
+        'transformationfailed' => get_string('transformationfailed', 'quiz_handout', $exportstylesheet)
     );
 
     // Write the book contents and the HTML template to a file.
@@ -106,7 +106,7 @@ function booktool_wordimport_export( $content ) {
             $cleancontent . "</body></html></container>\n<htmltemplate>\n" .
             file_get_contents($htmltemplatefilepath) . "\n</htmltemplate>\n</container>";
     if ((file_put_contents($tempxhtmlfilename, $xhtmloutput)) == 0) {
-        echo $OUTPUT->notification(get_string('cannotwritetotempfile', 'booktool_wordimport', basename($tempxhtmlfilename)));
+        echo $OUTPUT->notification(get_string('cannotwritetotempfile', 'quiz_handout', basename($tempxhtmlfilename)));
         return false;
     }
 
@@ -114,7 +114,7 @@ function booktool_wordimport_export( $content ) {
     $stylesheet = __DIR__ . "/" . $exportstylesheet;
     $xsltproc = xslt_create();
     if (!($xsltoutput = xslt_process($xsltproc, $tempxhtmlfilename, $stylesheet, null, null, $parameters))) {
-        echo $OUTPUT->notification(get_string('transformationfailed', 'booktool_wordimport', $stylesheet));
+        echo $OUTPUT->notification(get_string('transformationfailed', 'quiz_handout', $stylesheet));
         booktool_wordimport_debug_unlink($tempxhtmlfilename);
         return false;
     }
