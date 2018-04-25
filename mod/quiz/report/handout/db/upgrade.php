@@ -42,19 +42,5 @@ function xmldb_quiz_handout_upgrade($oldversion) {
     // Automatically generated Moodle v3.4.0 release upgrade line.
     // Put any upgrade step following this.
 
-    if ($oldversion < 2018021800) {
-
-        // Define key questionusageid-slot (foreign-unique) to be added to quiz_handout_regrades.
-        $table = new xmldb_table('quiz_handout_regrades');
-        $key = new xmldb_key('questionusageid-slot', XMLDB_KEY_FOREIGN_UNIQUE, array('questionusageid', 'slot'),
-            'question_attempts', array('questionusageid', 'slot'));
-
-        // Launch add key questionusageid-slot.
-        $dbman->add_key($table, $key);
-
-        // Handout savepoint reached.
-        upgrade_plugin_savepoint(true, 2018042200, 'quiz', 'handout');
-    }
-
     return true;
 }
