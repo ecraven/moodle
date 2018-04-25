@@ -69,7 +69,7 @@ class quiz_handout_report extends quiz_attempts_report {
 
         require_login($course->id, false, $cm);
 
-        $isteacher = has_capability('mod/quiz:preview', context_module::instance($quiz->id));
+        $isteacher = has_capability('mod/quiz:preview', context_module::instance($cm->id));
 
         $popup = $isteacher ? 0 : $quiz->popup; // Controls whether this is shown in a javascript-protected window.
 
@@ -1260,9 +1260,11 @@ class quiz_handout_report extends quiz_attempts_report {
         $kprimeresponse1 = $questiondata->responsetext_1;
         $kprimeresponse2 = $questiondata->responsetext_2;
 
-        if ($questiondata->options->shuffleanswers == 1) {
-            /* shuffle the array */
-            shuffle($kprimeoptions);
+        if(isset($questiondata->options->shuffleanswers)) {
+            if ($questiondata->options->shuffleanswers == 1) {
+                /* shuffle the array */
+                shuffle($kprimeoptions);
+            }
         }
         foreach ($kprimeoptions as $kprimeoption) {
             if ($kprimeoptionnumbering == 0) {
