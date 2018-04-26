@@ -38,7 +38,7 @@ require_once($CFG->dirroot . '/mod/quiz/report/handout/locallib.php');
 class quiz_handout_report extends quiz_attempts_report {
 
     /** @var array non printable question types. */
-    public $nonprintableqtypes = array("coderunner", "ddimageortext", "ddmarker", "ddwtos", "pmatch", "regexp");
+    public $nonprintableqtypes = array("coderunner", "ddimageortext", "ddmarker", "pmatch", "regexp");
 
     /**
      * This function calls the report's display.
@@ -110,6 +110,8 @@ class quiz_handout_report extends quiz_attempts_report {
             // $htmloutput .= booktool_wordimport_base64_images($context->id, 'chapter', $chapter->id);
             $htmloutput .= "</div>\n";
 
+            $htmloutput = str_replace ('<input type="checkbox" />',
+                '<span style="font-size: 15px;">&#x25a1;</span>', $htmloutput);
             $htmloutput = str_replace ('<input type="checkbox" />',
                 '<span style="font-size: 15px;">&#x25a1;</span>', $htmloutput);
 
@@ -303,6 +305,9 @@ class quiz_handout_report extends quiz_attempts_report {
                 case 'qtype_match_question':
                     $this->processmultichoicequestion($randomquestion, $solutions);
                     break;
+                case 'qtype_gapselect_question':
+                    $this->processgapselectquestion($randomquestion, $solutions);
+                    break;
                 case 'qtype_kprime_question':
                     $this->processmultichoicequestion($randomquestion, $solutions);
                     break;
@@ -344,6 +349,9 @@ class quiz_handout_report extends quiz_attempts_report {
                 case 'match':
                     $this->processmatchingquestion($questiondata, $solutions);
                     break;
+                case 'gapselect':
+                    $this->processgapselectquestion($questiondata, $solutions);
+                    break;
                 case 'kprime':
                     $this->processkprimequestion($questiondata, $solutions);
                     break;
@@ -354,8 +362,10 @@ class quiz_handout_report extends quiz_attempts_report {
                     break;
             }
         }
-        return preg_replace(array_map(array('quiz_handout_report', 'placeholders'), array_keys($replacearray)),
-            array_values($replacearray), $questiontext . $annotation);
+        return preg_replace(array_map(array('quiz_handout_report', 'placeholders'),
+            array_keys($replacearray)),
+            array_values($replacearray),
+            $questiontext . $annotation);
     }
 
     /**
@@ -1040,7 +1050,7 @@ class quiz_handout_report extends quiz_attempts_report {
      */
     public function processshortanswerquestion($questiondata, $solutions = false) {
         // Shortanswer question type.
-        global $CFG, $DB, $questiontext, $replacearray;
+        global $DB, $questiontext;
         $questiontext .= "<input type=\"text\" size=\"80\" style=\"border: 1px dashed #000000; height: 24px;\">";
     }
 
@@ -1175,12 +1185,6 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processmatchingquestion($questiondata, $solutions = false) {
         // Matching question type.
         global $questiontext;
-//        echo "----------------------------------------------\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-//        echo json_encode($questiontext);
-//        echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n----------------------------------------------";
-//        echo "----------------------------------------------\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-//        echo json_encode($questiondata);
-//        echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n----------------------------------------------";
         $matchoptionnumbering = 0;
         $matchoptionstring = "";
         $matchoptions = array();
@@ -1248,6 +1252,95 @@ class quiz_handout_report extends quiz_attempts_report {
             $matchoptionnumbering++;
         }
         $questiontext .= "<sup>*</sup>&#160;" . get_string('options', 'quiz_handout') . ": " . $matchoptionstring . "\n";
+    }
+
+    /**
+     * Process the missing words question type.
+     *
+     * @param object $questiondata the data defining a random question.
+     * @param bool $solutions whether to show the solutions.
+     * @throws coding_exception
+     */
+    public function processgapselectquestion($questiondata, $solutions = false) {
+        // Missing words question type.
+        global $questiontext, $replacearray, $annotation, $annotationnumbering;
+//        echo "----------------------------------------------\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+//        echo json_encode($questiontext);
+//        echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n----------------------------------------------";
+//        echo "----------------------------------------------\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+//        echo json_encode($questiondata);
+//        echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n----------------------------------------------";
+        $gapselectoptionnumbering = 0;
+        $gapselectoptionstring = "";
+        $gapselectoptions = array();
+        // Input field should be at least size 3.
+        $size = 3;
+        if (get_class($questiondata) == 'stdClass') {
+            $i = 1;
+            foreach ($questiondata->options->answers as $answer) {
+                // Looking for the largest option.
+                if (trim($answer->questiontext) != '') {
+                    $answeroption = $answer->answertext;
+                    if (strlen((string)$answeroption) > $size) {
+                        $size = strlen((string)$answeroption);
+                    }
+                }
+            }
+            foreach ($questiondata->options->answers as $answer) {
+                $gapselectoptions[] = $answer->answertext;
+                if (trim($answer->answer) != '') {
+                    $questiontext .= "<p>";
+                    // Remove outer <p> </p>.
+                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->answer);
+                    $questiontext .= "\n";
+                    $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
+                        "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
+                                                $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
+                                                    "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"" . $size .
+                                                    "\">&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                }
+            }
+            if ($questiondata->options->shuffleanswers == 1) {
+                // Shuffle the array.
+                shuffle($gapselectoptions);
+            }
+        }
+        if (get_class($questiondata) == 'qtype_gapselect_question') {
+            foreach ($questiondata->choices as $choice) {
+                // Looking for the largest option.
+                if (trim($choice) != '') {
+                    if (strlen((string)$choice) > $size) {
+                        $size = strlen((string)$choice);
+                    }
+                }
+            }
+            foreach ($questiondata->stems as $question) {
+                if (trim($question) != '') {
+                    $questiontext .= "<p>";
+                    // Remove outer <p> </p>.
+                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $question);
+                    $questiontext .= "\n";
+                    $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
+                        "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
+                }
+            }
+            foreach ($questiondata->choices as $choice) {
+                $gapselectoptions[] = $choice;
+            }
+            if ($questiondata->shufflestems = 1) {
+                // Shuffle the array.
+                shuffle($gapselectoptions);
+            }
+        }
+        foreach ($gapselectoptions as $gapselectoption) {
+            if ($gapselectoptionnumbering == 0) {
+                $gapselectoptionstring .= $gapselectoption;
+            } else {
+                $gapselectoptionstring .= " || " . $gapselectoption;
+            }
+            $gapselectoptionnumbering++;
+        }
+        $questiontext .= "<sup>*</sup>&#160;" . get_string('options', 'quiz_handout') . ": " . $gapselectoptionstring . "\n";
     }
 
     /**
@@ -1481,5 +1574,15 @@ class quiz_handout_report extends quiz_attempts_report {
      */
     public function placeholders($val) {
         return '/\{' . $val . '}/';
+    }
+
+    /**
+     * Return a placeholder, too
+     *
+     * @param string $val
+     * @return string
+     */
+    public function placeholderstoo($val) {
+        return '/[[' . $val . ']]/';
     }
 }
