@@ -24,6 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2018042200;
+$plugin->version  = 2018042600;
 $plugin->requires = 2017110800;
 $plugin->component = 'quiz_handout';

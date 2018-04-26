@@ -38,7 +38,7 @@ require_once($CFG->dirroot . '/mod/quiz/report/handout/locallib.php');
 class quiz_handout_report extends quiz_attempts_report {
 
     /** @var array non printable question types. */
-    public $nonprintableqtypes = array("ddimageortext", "ddmarker", "ddwtos");
+    public $nonprintableqtypes = array("coderunner", "ddimageortext", "ddmarker", "ddwtos", "pmatch", "regexp");
 
     /**
      * This function calls the report's display.
@@ -306,6 +306,9 @@ class quiz_handout_report extends quiz_attempts_report {
                 case 'qtype_kprime_question':
                     $this->processmultichoicequestion($randomquestion, $solutions);
                     break;
+                case 'qtype_mtf_question':
+                    $this->processmultichoicequestion($randomquestion, $solutions);
+                    break;
                 default:
                     break;
             }
@@ -343,6 +346,9 @@ class quiz_handout_report extends quiz_attempts_report {
                     break;
                 case 'kprime':
                     $this->processkprimequestion($questiondata, $solutions);
+                    break;
+                case 'mtf':
+                    $this->processmtfquestion($questiondata, $solutions);
                     break;
                 default:
                     break;
@@ -1260,7 +1266,8 @@ class quiz_handout_report extends quiz_attempts_report {
         $kprimeresponse2 = "";
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->rows as $answer) {
-                $kprimeoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->optiontext); /* remove outer <p> </p> */
+                // Remove outer <p> </p>.
+                $kprimeoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->optiontext);
             }
         }
 
@@ -1269,7 +1276,7 @@ class quiz_handout_report extends quiz_attempts_report {
 
         if(isset($questiondata->options->shuffleanswers)) {
             if ($questiondata->options->shuffleanswers == 1) {
-                /* shuffle the array */
+                // Shuffle the array.
                 shuffle($kprimeoptions);
             }
         }
@@ -1284,6 +1291,49 @@ class quiz_handout_report extends quiz_attempts_report {
             $kprimeoptionnumbering++;
         }
         $questiontext .= $kprimeoptionstring;
+    }
+
+    /**
+     * Process the mtf question type.
+     *
+     * @param object $questiondata the data defining a random question.
+     * @param bool $solutions whether to show the solutions.
+     */
+    public function processmtfquestion($questiondata, $solutions = false) {
+        // Multiple True/False question type.
+        global $CFG, $DB, $questiontext, $replacearray;
+        $mtfoptionnumbering = 0;
+        $mtfoptions = array();
+        $mtfoptionstring = "";
+        $mtfresponse1 = "";
+        $mtfresponse2 = "";
+        if (get_class($questiondata) == 'stdClass') {
+            foreach ($questiondata->options->rows as $answer) {
+                // Remove outer <p> </p>.
+                $mtfoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->optiontext);
+            }
+        }
+
+        $mtfresponse1 = $questiondata->responsetext_1;
+        $mtfresponse2 = $questiondata->responsetext_2;
+
+        if(isset($questiondata->options->shuffleanswers)) {
+            if ($questiondata->options->shuffleanswers == 1) {
+                // Shuffle the array.
+                shuffle($mtfoptions);
+            }
+        }
+        foreach ($mtfoptions as $mtfoption) {
+            if ($mtfoptionnumbering == 0) {
+                $mtfoptionstring .= "<p>$mtfresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
+                    "<input type=\"checkbox\" />&#160;$mtfresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $mtfoption . "</p>\n";
+            } else {
+                $mtfoptionstring .= "<p>$mtfresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
+                    "<input type=\"checkbox\" />&#160;$mtfresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $mtfoption . "</p>\n";
+            }
+            $mtfoptionnumbering++;
+        }
+        $questiontext .= $mtfoptionstring;
     }
 
     /**
