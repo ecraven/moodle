@@ -37,6 +37,9 @@ require_once($CFG->dirroot . '/mod/quiz/report/handout/locallib.php');
  */
 class quiz_handout_report extends quiz_attempts_report {
 
+    /** @var array non printable question types. */
+    public $nonprintableqtypes = array("ddimageortext", "ddmarker", "ddwtos");
+
     /**
      * This function calls the report's display.
      * @param object $quiz this quiz.
@@ -356,6 +359,10 @@ class quiz_handout_report extends quiz_attempts_report {
      * @return mixed
      */
     public function getquestiontext($questiondata) {
+        if(isset($questiondata->qtype) AND (in_array($questiondata->qtype, $this->nonprintableqtypes))) {
+            return get_string('qtypenotdisplayable', 'quiz_handout',
+                get_string('pluginname', 'qtype_' . $questiondata->qtype));
+        }
         return $questiondata->questiontext;
     }
 

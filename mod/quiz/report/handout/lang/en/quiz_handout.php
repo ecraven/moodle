@@ -75,3 +75,4 @@ $string['stylesheetunavailable'] = 'XSLT Stylesheet <b>{$a}</b> is not available
 $string['cannotopentempfile'] = 'Cannot open temporary file <b>{$a}</b>';
 $string['transformationfailed'] = 'XSLT transformation failed (<b>{$a}</b>)';
 $string['cannotwritetotempfile'] = 'Cannot open temporary file <b>{$a}</b>';
+$string['qtypenotdisplayable'] = 'A question of type {$a} cannot be printed out reasonably.';
