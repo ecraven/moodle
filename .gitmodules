@@ -1,6 +1,6 @@
 [submodule "local/codechecker"]
 	path = local/codechecker
-	url = https://github.com/moodle/hq/moodle-local_codechecker
+	url = https://github.com/moodlehq/moodle-local_codechecker
 [submodule "local/moodlecheck"]
 	path = local/moodlecheck
 	url = https://github.com/moodlehq/moodle-local_moodlecheck
@@ -13,3 +13,6 @@
 [submodule "question/type/mtf"]
 	path = question/type/mtf
 	url = https://github.com/ethz-let/qtype_mtf
+[submodule "filter/multilang2"]
+	path = filter/multilang2
+	url = https://github.com/iarenaza/moodle-filter_multilang2

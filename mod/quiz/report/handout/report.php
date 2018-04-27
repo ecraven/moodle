@@ -213,8 +213,8 @@ class quiz_handout_report extends quiz_attempts_report {
                             if ($question->responseformat == "editor" OR $question->responseformat == "monospaced") {
                                 if ($solutions) { /* solution */
                                     $boxtext = get_string('singlesolution', 'quiz_handout') . ":<br />\n";
-                                    /* this are the graderinfo informations, as there is no such thing as solution to the essay question
-                                     * type */
+                                    // This are the graderinfo informations, as there is no such thing as solution
+                                    // to the essay question type.
                                     $boxtext .= $question->graderinfo;
                                 } else { /* Handout. */
                                     $boxtext = "";
@@ -362,20 +362,23 @@ class quiz_handout_report extends quiz_attempts_report {
                     break;
             }
         }
-        return preg_replace(array_map(array('quiz_handout_report', 'placeholders'),
+        // Replace the placeholders by the HTML to print.
+        // The replacearray consists of tupels "#1": "the HTML to print", "#2": "the HTML to print" and so forth.
+        $questiontext = preg_replace(array_map(array('quiz_handout_report', 'placeholders'),
             array_keys($replacearray)),
             array_values($replacearray),
             $questiontext . $annotation);
+        return $questiontext;
     }
 
     /**
      * Return the question text.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a question.
      * @return mixed
      */
     public function getquestiontext($questiondata) {
-        if(isset($questiondata->qtype) AND (in_array($questiondata->qtype, $this->nonprintableqtypes))) {
+        if (isset($questiondata->qtype) AND (in_array($questiondata->qtype, $this->nonprintableqtypes))) {
             return get_string('qtypenotdisplayable', 'quiz_handout',
                 get_string('pluginname', 'qtype_' . $questiondata->qtype));
         }
@@ -385,7 +388,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the description "question type".
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a description question.
      */
     public function processdescription($questiondata) {
         // Description "question type".
@@ -404,11 +407,15 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processclozequestion($questiondata, $solutions = false) {
         // Multiquestion (cloze) question type.
         global $annotation, $annotationnumbering, $replacearray, $annotationsarray, $fieldsarray;
-        if (get_class($questiondata) == 'stdClass') { /* when coming from 'normal' question context */
-            $multiansweroptionscount = count($questiondata->options); /* check whether it has at least 1 question */
+        if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
+            $multiansweroptionscount = count($questiondata->options);
+            // Check whether it has at least 1 question.
         }
-        if (get_class($questiondata) == 'qtype_multianswer_question') { /* when sent as randomly chosen question */
-            $multiansweroptionscount = 1; /* we do not check whether it has at least 1 question */
+        if (get_class($questiondata) == 'qtype_multianswer_question') {
+            // When sent as randomly chosen question.
+            $multiansweroptionscount = 1;
+            // Do not check whether it has at least 1 question.
         }
         if ($multiansweroptionscount > 0) {
             if (get_class($questiondata) == 'stdClass') { /* when coming from 'normal' question context */
@@ -435,25 +442,28 @@ class quiz_handout_report extends quiz_attempts_report {
                                 foreach ($object->options->answers as $answer) {
                                     if ($answer->fraction > 0.0000000) {
                                         $correctanswers[$correctanswerscounter]['answer'] = $answer->answer;
-                                        $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction,
-                                                0, 8) . "%";
+                                        $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 *
+                                                $answer->fraction, 0, 8) . "%";
                                         $correctanswerscounter++;
                                     }
-                                    if ($object->qtype == 'numerical' && $answer->answerformat == 2) { /* numerical */
-                                        /* input field should be at least size 3 */
+                                    if ($object->qtype == 'numerical' && $answer->answerformat == 2) {
+                                        // Numerical.
+                                        // Input field should be at least size 3.
                                         if (strlen((string)$answer->answer) <= 3) {
                                             $size = 3;
                                         } else {
                                             $size = strlen((string)$answer->answer);
                                         }
 
-                                        /* however $size should not be over 50 (happens because of multilang) */
+                                        // However $size should not be over 50 (happens because of multilang).
                                         if ($size > 50) {
                                             $size = 50;
                                         }
-                                        /* shorten correct answer */
-                                        if ($solutions) { /* solution */
-                                            if (count($correctanswers) == 1) { /* just one solution */
+                                        // Shorten correct answer.
+                                        if ($solutions) {
+                                            // Solution.
+                                            if (count($correctanswers) == 1) {
+                                                // Just one solution.
                                                 $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
                                                     "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"" .
                                                     $correctanswers[0]['answer'] . "\"/>\n";
@@ -462,7 +472,8 @@ class quiz_handout_report extends quiz_attempts_report {
                                                     "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;<sup>*" .
                                                     $annotationnumbering . "</sup>\n";
                                             }
-                                        } else { /* handout */
+                                        } else {
+                                            // Handout.
                                             $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
                                                 "\" style=\"border: 1px dashed #000000; height: 24px;\"/>\n";
                                         }
@@ -470,7 +481,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                     /* Shortanswer (2) gäbe eine Linie. */
                                     if (($object->qtype == 'shortanswer' && $answer->answerformat == 0) OR
                                         ( $object->qtype == 'shortanswer' && $answer->answerformat == 2)) {
-                                        /* Input field should be at least size 3 */
+                                        // Input field should be at least size 3.
                                         if (strlen((string)$answer->answer) > $size) {
                                             $size = strlen((string)$answer->answer);
                                         }
@@ -605,7 +616,8 @@ class quiz_handout_report extends quiz_attempts_report {
                     $i++;
                 }
             }
-            if (get_class($questiondata) == 'qtype_multianswer_question') { /* when sent as randomly chosen question */
+            if (get_class($questiondata) == 'qtype_multianswer_question') {
+                // When sent as randomly chosen question.
                 $i = 1;
                 foreach ($questiondata->subquestions as $object) {
                     if ($object->questiontext) {
@@ -618,10 +630,11 @@ class quiz_handout_report extends quiz_attempts_report {
                         if ($multianswerquestionsoptionsanswerscount > 0) {
                             $pulldownoptionnumbering = 0;
                             $pulldownoptions = "";
-                            if (get_class($object->qtype) == 'qtype_numerical') { /* numerical */
+                            if (get_class($object->qtype) == 'qtype_numerical') {
+                                // Numerical.
                                 $correctanswers[$correctanswerscounter]['answer'] = $object->get_correct_answer()->answer;
                                 $correctanswers[$correctanswerscounter]['percent'] = "100%";
-                                /* input field should be at least size 3 */
+                                // Input field should be at least size 3.
                                 if (strlen((string)$object->get_correct_answer()->answer) <= 3) {
                                     $size = 3;
                                 } else {
@@ -679,7 +692,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                         }
                                     }
                                 }
-                                /* input field should be at least size 3 */
+                                // Input field should be at least size 3.
                                 if ($size <= 3) {
                                     $size = 3;
                                 }
@@ -779,7 +792,7 @@ class quiz_handout_report extends quiz_attempts_report {
                 }
             }
         }
-        /* routine to sort out multiple identical option fields */
+        // Routine to sort out multiple identical option fields.
         $singleannotationcounter = 1;
         $annotation = "<p>&#160;</p>\n";
         foreach ($annotationsarray as $uniqueannotation => $annotationvalues) {
@@ -895,7 +908,7 @@ class quiz_handout_report extends quiz_attempts_report {
                     }
                 }
             }
-            /* input field should be at least size 3 */
+            // Input field should be at least size 3.
             if ($size <= 3) {
                 $size = 3;
             }
@@ -916,7 +929,6 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processcalculatedmultiquestion($questiondata, $solutions = false) {
         // Calculated multichoice question type.
         global $CFG, $DB, $questiontext, $replacearray, $annotation;
-        // print_object($questiondata);
         $datasetdefs = array();
         $size = 0; /* correct answer length */
         $correctanswers = array();
@@ -968,10 +980,7 @@ class quiz_handout_report extends quiz_attempts_report {
         $vsarray = array();
         foreach ($datasetdefs as $dataset) {
             $datasetvarname = $dataset->name;
-            // echo $datasetvarname ."\n";
-            // echo count($dataset->items)."\n";
-            // print_object($dataset->items[rand(1, count($dataset->items))]);
-            /*             * * Adjust to the correct number of decimals ** */
+            // Adjust to the correct number of decimals.
             $randomvalue = $dataset->items[rand(1, count($dataset->items))]->value;
             $replacearray[$datasetvarname] = $randomvalue;
         }
@@ -1022,7 +1031,7 @@ class quiz_handout_report extends quiz_attempts_report {
             $pulldownoptionnumbering++;
         }
 
-        /* input field should be at least size 3 */
+        // Input field should be at least size 3.
         if ($size <= 3) {
             $size = 3;
         }
@@ -1068,13 +1077,17 @@ class quiz_handout_report extends quiz_attempts_report {
         $multichoiceoptionstring = "";
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->answers as $answer) {
-                $multichoiceoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->answer); /* remove outer <p> </p> */
+                // Remove outer <p> </p>.
+                $multichoiceoptions[] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1',
+                    $answer->answer);
             }
         }
         if ((get_class($questiondata) == 'qtype_multichoice_single_question') OR
             ( get_class($questiondata) == 'qtype_multichoice_multi_question')) {
             foreach ($questiondata->answers as $answer) {
-                $multichoiceoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->answer); /* remove outer <p> </p> */
+                // Remove outer <p> </p>.
+                $multichoiceoptions[] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1',
+                    $answer->answer);
             }
         }
         if ($questiondata->options->shuffleanswers == 1) {
@@ -1149,7 +1162,10 @@ class quiz_handout_report extends quiz_attempts_report {
 
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->answers as $answer) {
-                $truefalseoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->answer); /* remove outer <p> </p> */
+                // Remove outer <p> </p>.
+                $truefalseoptions[] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1',
+                    $answer->answer);
+
             }
         }
         if (get_class($questiondata) == 'qtype_truefalse_question') {
@@ -1157,12 +1173,6 @@ class quiz_handout_report extends quiz_attempts_report {
                 0 => get_string('false', 'qtype_truefalse'),
                 1 => get_string('true', 'qtype_truefalse'));
         }
-
-        /* This doesn't happen. */
-//            if ($questiondata->shuffleanswers = 1) {
-        /* Shuffle the array. */
-//                shuffle($truefalseoptions);
-//            }
 
         foreach ($truefalseoptions as $truefalseoption) {
             if ($truefalseoptionnumbering == 0) {
@@ -1205,7 +1215,8 @@ class quiz_handout_report extends quiz_attempts_report {
                 if (trim($answer->questiontext) != '') {
                     $questiontext .= "<p>";
                     // Remove outer <p> </p>.
-                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->questiontext);
+                    $questiontext = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1',
+                        $answer->questiontext);
                     $questiontext .= "\n";
                     $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
                         "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
@@ -1229,7 +1240,8 @@ class quiz_handout_report extends quiz_attempts_report {
                 if (trim($question) != '') {
                     $questiontext .= "<p>";
                     // Remove outer <p> </p>.
-                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $question);
+                    $questiontext = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1', $question);
+
                     $questiontext .= "\n";
                     $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
                         "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
@@ -1264,12 +1276,6 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processgapselectquestion($questiondata, $solutions = false) {
         // Missing words question type.
         global $questiontext, $replacearray, $annotation, $annotationnumbering;
-//        echo "----------------------------------------------\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-//        echo json_encode($questiontext);
-//        echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n----------------------------------------------";
-//        echo "----------------------------------------------\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-//        echo json_encode($questiondata);
-//        echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n----------------------------------------------";
         $gapselectoptionnumbering = 0;
         $gapselectoptionstring = "";
         $gapselectoptions = array();
@@ -1279,26 +1285,36 @@ class quiz_handout_report extends quiz_attempts_report {
             $i = 1;
             foreach ($questiondata->options->answers as $answer) {
                 // Looking for the largest option.
-                if (trim($answer->questiontext) != '') {
-                    $answeroption = $answer->answertext;
+                if (trim($answer->answer) != '') {
+                    $answeroption = $answer->answer;
                     if (strlen((string)$answeroption) > $size) {
                         $size = strlen((string)$answeroption);
                     }
                 }
             }
             foreach ($questiondata->options->answers as $answer) {
-                $gapselectoptions[] = $answer->answertext;
+                $gapselectoptions[] = $answer->answer;
                 if (trim($answer->answer) != '') {
                     $questiontext .= "<p>";
                     // Remove outer <p> </p>.
-                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->answer);
-                    $questiontext .= "\n";
-                    $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
-                        "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
-                                                $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
-                                                    "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"" . $size .
-                                                    "\">&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                    $questiontext .= preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1',
+                        $answer->answer);
+                    $questiontext .= "</p>\n";
+                    if ($solutions) {
+                        // Solution.
+                        $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
+                            "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"" .
+                            $answer->answer . "\"/>&#160;<sup>*" . $i . "</sup>\n";
+                    } else {
+                        // Handout.
+                        $replacearray["$i"] = "<input type=\"text\" size=\"" . $size .
+                            "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;" .
+                            "<sup>*" . $annotationnumbering . "</sup>\n";
+                    }
                 }
+
+                $i++;
+                // Next answer.
             }
             if ($questiondata->options->shuffleanswers == 1) {
                 // Shuffle the array.
@@ -1332,6 +1348,7 @@ class quiz_handout_report extends quiz_attempts_report {
                 shuffle($gapselectoptions);
             }
         }
+
         foreach ($gapselectoptions as $gapselectoption) {
             if ($gapselectoptionnumbering == 0) {
                 $gapselectoptionstring .= $gapselectoption;
@@ -1340,7 +1357,8 @@ class quiz_handout_report extends quiz_attempts_report {
             }
             $gapselectoptionnumbering++;
         }
-        $questiontext .= "<sup>*</sup>&#160;" . get_string('options', 'quiz_handout') . ": " . $gapselectoptionstring . "\n";
+        $annotation = "<sup>*</sup>&#160;" . get_string('options', 'quiz_handout') . ": " .
+            $gapselectoptionstring . "\n";
     }
 
     /**
@@ -1360,14 +1378,15 @@ class quiz_handout_report extends quiz_attempts_report {
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->rows as $answer) {
                 // Remove outer <p> </p>.
-                $kprimeoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->optiontext);
+                $kprimeoptions[] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1',
+                    $answer->optiontext);
             }
         }
 
         $kprimeresponse1 = $questiondata->responsetext_1;
         $kprimeresponse2 = $questiondata->responsetext_2;
 
-        if(isset($questiondata->options->shuffleanswers)) {
+        if (isset($questiondata->options->shuffleanswers)) {
             if ($questiondata->options->shuffleanswers == 1) {
                 // Shuffle the array.
                 shuffle($kprimeoptions);
@@ -1376,10 +1395,12 @@ class quiz_handout_report extends quiz_attempts_report {
         foreach ($kprimeoptions as $kprimeoption) {
             if ($kprimeoptionnumbering == 0) {
                 $kprimeoptionstring .= "<p>$kprimeresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
-                    "<input type=\"checkbox\" />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $kprimeoption . "</p>\n";
+                    "<input type=\"checkbox\" />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" .
+                    $kprimeoption . "</p>\n";
             } else {
                 $kprimeoptionstring .= "<p>$kprimeresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
-                    "<input type=\"checkbox\" />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $kprimeoption . "</p>\n";
+                    "<input type=\"checkbox\" />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" .
+                    $kprimeoption . "</p>\n";
             }
             $kprimeoptionnumbering++;
         }
@@ -1403,14 +1424,15 @@ class quiz_handout_report extends quiz_attempts_report {
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->rows as $answer) {
                 // Remove outer <p> </p>.
-                $mtfoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->optiontext);
+                $mtfoptions[] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1',
+                    $answer->optiontext);
             }
         }
 
         $mtfresponse1 = $questiondata->responsetext_1;
         $mtfresponse2 = $questiondata->responsetext_2;
 
-        if(isset($questiondata->options->shuffleanswers)) {
+        if (isset($questiondata->options->shuffleanswers)) {
             if ($questiondata->options->shuffleanswers == 1) {
                 // Shuffle the array.
                 shuffle($mtfoptions);
@@ -1474,7 +1496,7 @@ class quiz_handout_report extends quiz_attempts_report {
             }
 
             $question = question_bank::load_question($questionid, $allowshuffle);
-            // $this->set_selected_question_name($question, $questiondata->name);
+
             return $question;
         }
         return null;
@@ -1568,21 +1590,16 @@ class quiz_handout_report extends quiz_attempts_report {
 
     /**
      * Return a placeholder
+     * Surrounded by curly brackets if containing # else surrounded by double square brackets.
      *
-     * @param string $val
-     * @return string
+     * @param string $val the "#1", "#2" or "1", "2" needles.
+     * @return string $val surrounded by curly brackets.
      */
     public function placeholders($val) {
-        return '/\{' . $val . '}/';
-    }
-
-    /**
-     * Return a placeholder, too
-     *
-     * @param string $val
-     * @return string
-     */
-    public function placeholderstoo($val) {
-        return '/[[' . $val . ']]/';
+        if (preg_match("/^(#\w+)/", $val)) {
+            return '/\{' . $val . '}/';
+        } else {
+            return '/\[\[' . $val . ']]/';
+        }
     }
 }
