@@ -38,7 +38,7 @@ require_once(dirname(__FILE__).'/xslemulatexslt.inc');
  * @param string $content all HTML content from a book or chapter
  * @return string Word-compatible XHTML text
  */
-function booktool_wordimport_export( $content ) {
+function handout_wordimport_export( $content ) {
     global $CFG, $USER, $COURSE, $OUTPUT;
 
     /*
@@ -142,30 +142,23 @@ function booktool_wordimport_export( $content ) {
  * A string containing the HTML with embedded base64 images is returned
  *
  * @param string $contextid the context ID
- * @param string $filearea filearea: chapter or intro
- * @param string $chapterid the chapter ID (optional)
  * @return string the modified HTML with embedded images
  */
-function booktool_wordimport_base64_images($contextid, $filearea, $chapterid = null) {
-    // Get the list of files embedded in the book or chapter.
-    // Note that this will break on images in the Book Intro section.
+function handout_wordimport_base64_images($contextid) {
+    // Get the list of files embedded in the quiz.
     $imagestring = '';
     $fs = get_file_storage();
-    if ($filearea == 'intro') {
-        $files = $fs->get_area_files($contextid, 'mod_book', $filearea);
-    } else {
-        $files = $fs->get_area_files($contextid, 'mod_book', $filearea, $chapterid);
-    }
+    $files = $fs->get_area_files($contextid, 'question', 'questiontext');
     foreach ($files as $fileinfo) {
         // Process image files, converting them into Base64 encoding.
-        debugging(__FUNCTION__ . ": $filearea file: " . $fileinfo->get_filename(), DEBUG_WORDIMPORT);
+        debugging(__FUNCTION__ . ": questiontext file: " . $fileinfo->get_filename(), DEBUG_WORDIMPORT);
         $fileext = strtolower(pathinfo($fileinfo->get_filename(), PATHINFO_EXTENSION));
         if ($fileext == 'png' or $fileext == 'jpg' or $fileext == 'jpeg' or $fileext == 'gif') {
             $filename = $fileinfo->get_filename();
             $filetype = ($fileext == 'jpg') ? 'jpeg' : $fileext;
             $fileitemid = $fileinfo->get_itemid();
             $filepath = $fileinfo->get_filepath();
-            $filedata = $fs->get_file($contextid, 'mod_book', $filearea, $fileitemid, $filepath, $filename);
+            $filedata = $fs->get_file($contextid, 'question', 'questiontext', $fileitemid, $filepath, $filename);
 
             if (!$filedata === false) {
                 $base64data = base64_encode($filedata->get_content());

@@ -66,7 +66,7 @@ class quiz_handout_report extends quiz_attempts_report {
 
         // Prepare for downloading, if applicable.
         $courseshortname = format_string($course->shortname, true,
-                array('context' => context_course::instance($course->id)));
+                array('context' => context_module::instance($cm->id)));
         $filename = quiz_report_download_filename(get_string('handoutfilename', 'quiz_handout'),
                 $courseshortname, $quiz->name) . ".doc";
 
@@ -81,6 +81,44 @@ class quiz_handout_report extends quiz_attempts_report {
         $hasstudents = true;
 
         $hasquestions = quiz_has_questions($quiz->id);
+//
+//        $questionslots = $this->quiz_report_get_all_question_slots($quiz);
+//        foreach ($questionslots as $qs) {
+//                $question = question_bank::load_question($qs->id);
+//            $fs = get_file_storage();
+//            $files = $fs->get_area_files($question->contextid, 'question', 'questiontext');
+//            echo "\n\n\n\n$question->contextid\n\n\n\n\n\n";
+//            echo "\n\n\n\n" . json_encode($files) . "\n\n\n\n\n\n";
+//            echo "\n\n\n\n$question->contextid\n\n\n\n\n\n";
+//            foreach ($files as $fileinfo) {
+//                // Process image files, converting them into Base64 encoding.
+//                debugging(__FUNCTION__ . ": questiontext file: " . $fileinfo->get_filename(), DEBUG_WORDIMPORT);
+//                $fileext = strtolower(pathinfo($fileinfo->get_filename(), PATHINFO_EXTENSION));
+//                echo $fileext . "\n";
+//                if ($fileext == 'png' or $fileext == 'jpg' or $fileext == 'jpeg' or $fileext == 'gif') {
+//                    $filename = $fileinfo->get_filename();
+//                    echo $filename . "\n";
+//                    $filetype = ($fileext == 'jpg') ? 'jpeg' : $fileext;
+//                    $fileitemid = $fileinfo->get_itemid();
+//                    $filepath = $fileinfo->get_filepath();
+//                    echo "Filepath:" . $filepath . "\n";
+//                    $filedata = $fs->get_file($question->contextid, 'question', 'questiontext',
+//                        $fileitemid, $filepath, $filename);
+//
+//                    if (!$filedata === false) {
+//                        $base64data = base64_encode($filedata->get_content());
+//                        $filedata = 'data:image/' . $filetype . ';base64,' . $base64data;
+//                        // Embed the image name and data into the HTML.
+//                        echo '<img title="' . $filename . '" src="' . $filedata . '"/>';
+//                    }
+//                }
+//            }
+//                echo "\n\n\n\n\n\n\n\n\n\n";
+//        }
+
+//        echo "\n\n\n\n\n\n\n\n\n\n";
+//        echo handout_wordimport_base64_images(14);
+//        echo "\n\n\n\n\n\n\n\n\n\n";
 
         if ($download == 1) {
             /*
@@ -107,7 +145,8 @@ class quiz_handout_report extends quiz_attempts_report {
             $htmloutput .= '<div class="chapter" id="' . "blah chapter" . '">';
             // Check if the chapter title is duplicated inside the content, and include it if not.
             $htmloutput .= $todisplay;
-            // $htmloutput .= booktool_wordimport_base64_images($context->id, 'chapter', $chapter->id);
+
+            $htmloutput .= handout_wordimport_base64_images(14);
             $htmloutput .= "</div>\n";
 
             $htmloutput = str_replace ('<input type="checkbox" />',
@@ -115,7 +154,7 @@ class quiz_handout_report extends quiz_attempts_report {
             $htmloutput = str_replace ('<input type="checkbox" />',
                 '<span style="font-size: 15px;">&#x25a1;</span>', $htmloutput);
 
-            $docxcontent = booktool_wordimport_export($htmloutput);
+            $docxcontent = handout_wordimport_export($htmloutput);
             send_file($docxcontent, $filename, 10, 0, true, array('filename' => $filename));
             die;
         } else {
