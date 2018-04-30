@@ -103,7 +103,7 @@ class quiz_handout_report extends quiz_attempts_report {
             // $htmloutput .= booktool_wordimport_base64_images($context->id, 'intro');
             $htmloutput .= "</div>\n";
 
-            $htmloutput .= '<div class="chapter" id="' . "blah chapter" . '">';
+            $htmloutput .= "<div class=\"chapter\">";
             $htmloutput .= $todisplay;
             $htmloutput .= "</div>\n";
 
@@ -111,7 +111,7 @@ class quiz_handout_report extends quiz_attempts_report {
                 '<span style="font-size: 15pt; font-family: Arial;">&#x25a1;</span>', $htmloutput);
             $htmloutput = str_replace ('<input type="radio" />',
                 '<span style="font-size: 15pt; font-family: Arial;">&#x25cb;</span>', $htmloutput);
-            $htmloutput = preg_replace('/<input type="text" value="(.+?)" size="(.+?)" style="border: 1px dashed #000000; height: 24px;">/',
+            $htmloutput = preg_replace('/<input type="text" value="(.+?)" size="(.+?)" style="border: 1px dashed #000000; height: 24px;"\/>/',
                 '<span style ="border: 1px dashed #000000; padding-left: 0.5em; padding-right: 0.5em; height: 24px">$1</span>', $htmloutput);
 
             file_put_contents('/Users/luca/Desktop/log0.txt', $htmloutput);
@@ -390,8 +390,8 @@ class quiz_handout_report extends quiz_attempts_report {
      */
     public function getquestiontext($questiondata) {
         if (isset($questiondata->qtype) AND (in_array($questiondata->qtype, $this->nonprintableqtypes))) {
-            return get_string('qtypenotdisplayable', 'quiz_handout',
-                get_string('pluginname', 'qtype_' . $questiondata->qtype));
+            return "<p>" . get_string('qtypenotdisplayable', 'quiz_handout',
+                get_string('pluginname', 'qtype_' . $questiondata->qtype)) . "</p>\n";
         }
         return $questiondata->questiontext;
     }
@@ -483,7 +483,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                                     " value=\"" . $correctanswers[0]['answer'] . "\"" .
                                                     " size=\"" . $size . "\"" .
                                                     " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                    ">\n";
+                                                    "/>\n";
                                             } else {
                                                 $spacesize = "";
                                                 for($j = 1; $j <= $size; $j++) {
@@ -493,7 +493,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                                     " value=\"" . $spacesize . "\"" .
                                                     " size=\"" . $size . "\"" .
                                                     " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                    ">&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                                                    "/>&#160;<sup>*" . $annotationnumbering . "</sup>\n";
                                             }
                                         } else {
                                             // Handout.
@@ -506,7 +506,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                                 " value=\"" . $spacesize . "\"" .
                                                 " size=\"" . $size . "\"" .
                                                 " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                ">\n";
+                                                "/>\n";
                                         }
                                     } /* Ende numerical. */
                                     /* Shortanswer (2) gäbe eine Linie. */
@@ -532,7 +532,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                                     " value=\"" . $correctanswers[0]['answer'] . "\"" .
                                                     " size=\"" . $size . "\"" .
                                                     " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                    ">\n";
+                                                    "/>\n";
                                             } else {
                                                 $spacesize = "";
                                                 for($j = 1; $j <= $size; $j++) {
@@ -542,7 +542,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                                     " value=\"" . $spacesize . "\"" .
                                                     " size=\"" . $size . "\"" .
                                                     " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                    ">&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                                                    "/>&#160;<sup>*" . $annotationnumbering . "</sup>\n";
                                             }
                                         } else {
                                             // Handout.
@@ -555,12 +555,12 @@ class quiz_handout_report extends quiz_attempts_report {
                                                 " value=\"" . $spacesize . "\"" .
                                                 " size=\"" . $size . "\"" .
                                                 " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                ">\n";
+                                                "/>\n";
                                             $replacearray["#$i"] = "<input type=\"text\"" .
                                                 " value=\"" . $spacesize . "\"" .
                                                 " size=\"" . $size . "\"" .
                                                 " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                ">\n";
+                                                "/>\n";
                                         }
                                     }
 
@@ -594,7 +594,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                                     " value=\"" . $correctanswers[0]['answer'] . "\"" .
                                                     " size=\"" . $size . "\"" .
                                                     " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                    ">\n";
+                                                    "/>\n";
                                             } else {
                                                 $spacesize = "";
                                                 for($j = 1; $j <= $size; $j++) {
@@ -604,7 +604,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                                     " value=\"" . $spacesize . "\"" .
                                                     " size=\"" . $size . "\"" .
                                                     " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                    ">&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                                                    "/>&#160;<sup>*" . $annotationnumbering . "</sup>\n";
                                             }
                                         } else {
                                             // Handout.
@@ -617,12 +617,12 @@ class quiz_handout_report extends quiz_attempts_report {
                                                 " value=\"" . $spacesize . "\"" .
                                                 " size=\"" . $size . "\"" .
                                                 " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                ">\n";
+                                                "/>\n";
                                             $replacearray["#$i"] = "<input type=\"text\"" .
                                                 " value=\"" . $spacesize . "\"" .
                                                 " size=\"" . $size . "\"" .
                                                 " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                                ">&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                                                "/>&#160;<sup>*" . $annotationnumbering . "</sup>\n";
                                         }
                                     } /* Ende multichoice. */
                                     if ($object->qtype == 'calculated' && $answer->answerformat == 0) { /* calculated */
@@ -634,9 +634,9 @@ class quiz_handout_report extends quiz_attempts_report {
                                         }
 
                                         $pulldownoptionnumbering++;
-                                        $replacearray["#$i"] = "<input type=\"text\" size=\10\" style=\"" .
-                                            "border: 1px dashed #000000; height: 24px;\" />&#160;<sup>*" .
-                                            $annotationnumbering . "</sup>\n";
+                                        $replacearray["#$i"] = "<input type=\"text\" size=\10\"" .
+                                            " style=\"border: 1px dashed #000000; height: 24px;\"" .
+                                            "/>&#160;<sup>*" . $annotationnumbering . "</sup>\n";
                                     } /* Ende calculated. */
                                 }
                                 if (($object->qtype == 'multichoice' && $answer->answerformat == 0) OR
@@ -692,12 +692,12 @@ class quiz_handout_report extends quiz_attempts_report {
                                             " value=\"" . $spacesize . "\"" .
                                             " size=\"" . $size . "\"" .
                                             " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                            ">\n";
+                                            "/>\n";
                                         $replacearray["#$i"] = "<input type=\"text\"" .
                                             " value=\"" . $spacesize . "\"" .
                                             " size=\"" . $size . "\"" .
                                             " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                                            ">\n";
+                                            "/>\n";
                                     }
                                 }
                             }
@@ -738,7 +738,7 @@ class quiz_handout_report extends quiz_attempts_report {
                                     $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
                                         "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"\"/>\n";
                                 } else {
-                                    $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
+                                    $fieldsarray["#$i"] = "<input type=\"text\" size=\"" . $size .
                                         "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"\"/>\n";
                                     $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
                                         "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"\"/>&#160;<sup>*" .
@@ -1003,8 +1003,16 @@ class quiz_handout_report extends quiz_attempts_report {
             if ($size <= 3) {
                 $size = 3;
             }
-            $questiontext .= "<br /><input type=\"text\" size=\"" . $size .
-                "\" style=\"border: 1px dashed #000000; height: 24px;\">";
+            // In the order type value size style.
+            $spacesize = "";
+            for($j = 1; $j <= $size; $j++) {
+                $spacesize .= "&#160;&#160;";
+            }
+            $questiontext .= "<input type=\"text\"" .
+                " value=\"" . $spacesize . "\"" .
+                " size=\"" . $size . "\"" .
+                " style=\"border: 1px dashed #000000; height: 24px;\"" .
+                "/>\n";
         }
     }
 
@@ -1135,7 +1143,7 @@ class quiz_handout_report extends quiz_attempts_report {
             $questiontext .= get_string('pleasecheckoneormoreanswers', 'lesson') . "<br/>\n";
         }
         $questiontext .= "<br />\n<input type=\"text\" size=\"" . $size .
-            "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup>\n";
+            "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;<sup>*</sup>\n";
         if ($annotationnumbering == 0) {
             $annotation .= "<p>&#160;</p>\n";
         }
@@ -1151,7 +1159,16 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processshortanswerquestion($questiondata, $solutions = false) {
         // Shortanswer question type.
         global $DB, $questiontext;
-        $questiontext .= "<input type=\"text\" size=\"80\" style=\"border: 1px dashed #000000; height: 24px;\">";
+        // In the order type value size style.
+        $spacesize = "";
+        for($j = 1; $j <= 80; $j++) {
+            $spacesize .= "&#160;";
+        }
+        $questiontext .= "<input type=\"text\"" .
+            " value=\"" . $spacesize . "\"" .
+            " size=\"80\"" .
+            " style=\"border: 1px dashed #000000; height: 24px;\"" .
+            "/>\n";
     }
 
     /**
@@ -1232,8 +1249,18 @@ class quiz_handout_report extends quiz_attempts_report {
                     }
                 }
             }
-            $questiontext .= "<p><input type=\"text\" size=\"$size\" style=\"border: 1px dashed #000000; " .
-                "height: 24px;\"></p>\n";
+            $questiontext = "<p>" . $questiontext;
+            // In the order type value size style.
+            $spacesize = "";
+            for($j = 1; $j <= $size; $j++) {
+                $spacesize .= "&#160;&#160;";
+            }
+            $questiontext .= "</p>\n<p>" .
+                "<input type=\"text\"" .
+                " value=\"" . $spacesize . "\"" .
+                " size=\"" . $size . "\"" .
+                " style=\"border: 1px dashed #000000; height: 24px;\"" .
+                "/></p>\n";
         }
     }
 
@@ -1307,8 +1334,16 @@ class quiz_handout_report extends quiz_attempts_report {
                     // Remove outer <p> </p>.
                     $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->questiontext);
                     $questiontext .= "\n";
-                    $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
-                        "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
+                    // In the order type value size style.
+                    $spacesize = "";
+                    for($j = 1; $j <= $size; $j++) {
+                        $spacesize .= "&#160;";
+                    }
+                    $questiontext .= "&#160;<input type=\"text\"" .
+                        " value=\"" . $spacesize . "\"" .
+                        " size=\"" . $size . "\"" .
+                        " style=\"border: 1px dashed #000000; height: 24px;\"" .
+                        "/>&#160;<sup>*</sup></p>\n";
                 }
             }
             if ($questiondata->options->shuffleanswers == 1) {
@@ -1333,7 +1368,7 @@ class quiz_handout_report extends quiz_attempts_report {
 
                     $questiontext .= "\n";
                     $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
-                        "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
+                        "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;<sup>*</sup></p>\n";
                 }
             }
             foreach ($questiondata->choices as $choice) {
@@ -1352,7 +1387,9 @@ class quiz_handout_report extends quiz_attempts_report {
             }
             $matchoptionnumbering++;
         }
-        $questiontext .= "<sup>*</sup>&#160;" . get_string('options', 'quiz_handout') . ": " . $matchoptionstring . "\n";
+        $questiontext = "<p>" . $questiontext . "</p>\n";
+        $questiontext .= "<p><sup>*</sup>&#160;" . get_string('options', 'quiz_handout') . ": " .
+            $matchoptionstring . "</p>\n";
     }
 
     /**
@@ -1396,7 +1433,7 @@ class quiz_handout_report extends quiz_attempts_report {
                             " value=\"" . $answer->answer . "\"" .
                             " size=\"" . $size . "\"" .
                             " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                            ">&#160;<sup>*" . $i . "</sup>\n";
+                            "/>&#160;<sup>*" . $i . "</sup>\n";
                     } else {
                         // Handout.
                         // In the order type value size style.
@@ -1408,7 +1445,7 @@ class quiz_handout_report extends quiz_attempts_report {
                             " value=\"" . $spacesize . "\"" .
                             " size=\"" . $size . "\"" .
                             " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                            ">&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                            "/>&#160;<sup>*" . $annotationnumbering . "</sup>\n";
                     }
                 }
 
@@ -1436,7 +1473,7 @@ class quiz_handout_report extends quiz_attempts_report {
                     $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $question);
                     $questiontext .= "\n";
                     $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
-                        "\" style=\"border: 1px dashed #000000; height: 24px;\">&#160;<sup>*</sup></p>\n";
+                        "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;<sup>*</sup></p>\n";
                 }
             }
             foreach ($questiondata->choices as $choice) {
@@ -1644,7 +1681,8 @@ class quiz_handout_report extends quiz_attempts_report {
      */
     public function get_database_dataset_items($definition) {
         global $DB;
-        $databasedataitems = $DB->get_records_sql(// Use number as key!!
+        $databasedataitems = $DB->get_records_sql(
+            // Use number as key!!
             " SELECT id , itemnumber, definition,  value
             FROM {question_dataset_items}
             WHERE definition = $definition order by id DESC ", array($definition));
@@ -1664,16 +1702,17 @@ class quiz_handout_report extends quiz_attempts_report {
      * @return string the name table
      * @throws coding_exception
      */
-    public function get_name_table() {
-        return '<table>
-                <tr><td>' . get_string('lastname', 'moodle') .
-                    '</td><td>&#160;&#160;...........................................</td></tr>' .
-                '<tr><td>' . get_string('firstname', 'moodle') .
-                    '</td><td>&#160;&#160;...........................................</td></tr>' .
-                '<tr><td>' . get_string('username', 'moodle') .
-                    '</td><td>&#160;&#160;...........................................</td></tr>' .
-                '</table>'.
-                '<br />'."\n";
+    public function get_name_table()
+    {
+        return "<p>&#160;</p>\n<table>\n" .
+            "<tr><td>" . get_string("lastname", "moodle") .
+            "</td><td>&#160;&#160;...........................................</td></tr>\n" .
+            "<tr><td>" . get_string("firstname", "moodle") .
+            "</td><td>&#160;&#160;...........................................</td></tr>\n" .
+            "<tr><td>" . get_string("username", "moodle") .
+            "</td><td>&#160;&#160;...........................................</td></tr>\n" .
+            "</table>\n" .
+            "<br />" . "\n";
     }
 
     /**
@@ -1690,10 +1729,10 @@ class quiz_handout_report extends quiz_attempts_report {
 
     /**
      * Return a placeholder
-     * Surrounded by curly brackets if containing # else surrounded by double square brackets.
+     * Surrounded by curly brackets.
      *
-     * It could be arriving contents of {base} {a} calculated questions placeholders, [[1]] gapselect
-     * questions placeholders or {#1} {#2} cloze questions placeholders.
+     * It could be arriving contents of {base} {a} calculated questions placeholders
+     * or {#1} {#2} cloze questions placeholders.
      *
      * @param string $val the "#1", "#2" or "1", "2" needles.
      * @return string $val surrounded by curly brackets.
@@ -1704,12 +1743,11 @@ class quiz_handout_report extends quiz_attempts_report {
 
     /**
      * Return a placeholder
-     * Surrounded by curly brackets if containing # else surrounded by double square brackets.
+     * Surrounded by double square brackets.
      *
-     * It could be arriving contents of {base} {a} calculated questions placeholders, [[1]] gapselect
-     * questions placeholders or {#1} {#2} cloze questions placeholders.
+     * It could be arriving contents of [[1]] gapselect questions placeholders.
      *
-     * @param string $val the "#1", "#2" or "1", "2" needles.
+     * @param string $val the "1", "2" needles.
      * @return string $val surrounded by square brackets.
      */
     public function squareplaceholders($val) {
