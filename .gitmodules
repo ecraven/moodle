@@ -16,3 +16,9 @@
 [submodule "filter/multilang2"]
 	path = filter/multilang2
 	url = https://github.com/iarenaza/moodle-filter_multilang2
+[submodule "question/type/wordtable"]
+	path = question/type/wordtable
+	url = https://github.com/ecampbell/moodle-qformat_wordtable
+[submodule "question/format/wordtable"]
+	path = question/format/wordtable
+	url = https://github.com/ecampbell/moodle-qformat_wordtable

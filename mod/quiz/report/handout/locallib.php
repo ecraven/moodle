@@ -28,6 +28,7 @@ define('DEBUG_WORDIMPORT', E_ALL);
 // @codingStandardsIgnoreLine define('DEBUG_WORDIMPORT', 0);
 
 require_once(dirname(__FILE__).'/xslemulatexslt.inc');
+require_once(dirname(__FILE__).'/report.php');
 
 /**
  * Export book HTML into Word-compatible XHTML format
@@ -77,13 +78,7 @@ function handout_wordimport_export( $content ) {
     // Uncomment next line to give XSLT as much memory as possible, to enable larger Word files to be exported.
     // @codingStandardsIgnoreLine raise_memory_limit(MEMORY_HUGE);
 
-    $cleancontent = booktool_wordimport_clean_html_text($content);
-
-    // Set the offset for heading styles, default is h3 becomes Heading 1.
-    $heading1styleoffset = '3';
-    if (strpos($cleancontent, '<div class="lucimoo">')) {
-        $heading1styleoffset = '1';
-    }
+    $cleancontent = handout_wordimport_clean_html_text($content);
 
     // Set parameters for XSLT transformation. Note that we cannot use $arguments though.
     $parameters = array (
@@ -115,10 +110,10 @@ function handout_wordimport_export( $content ) {
     $xsltproc = xslt_create();
     if (!($xsltoutput = xslt_process($xsltproc, $tempxhtmlfilename, $stylesheet, null, null, $parameters))) {
         echo $OUTPUT->notification(get_string('transformationfailed', 'quiz_handout', $stylesheet));
-        booktool_wordimport_debug_unlink($tempxhtmlfilename);
+        handout_wordimport_debug_unlink($tempxhtmlfilename);
         return false;
     }
-    booktool_wordimport_debug_unlink($tempxhtmlfilename);
+    handout_wordimport_debug_unlink($tempxhtmlfilename);
 
     // Strip out any redundant namespace attributes, which XSLT on Windows seems to add.
     $xsltoutput = str_replace(' xmlns=""', '', $xsltoutput);
@@ -141,30 +136,33 @@ function handout_wordimport_export( $content ) {
  *
  * A string containing the HTML with embedded base64 images is returned
  *
- * @param string $contextid the context ID
+ * @param string $quizid the quiz ID
  * @return string the modified HTML with embedded images
  */
-function handout_wordimport_base64_images($contextid) {
+function handout_wordimport_base64_images($questionslots) {
     // Get the list of files embedded in the quiz.
     $imagestring = '';
-    $fs = get_file_storage();
-    $files = $fs->get_area_files($contextid, 'question', 'questiontext');
-    foreach ($files as $fileinfo) {
-        // Process image files, converting them into Base64 encoding.
-        debugging(__FUNCTION__ . ": questiontext file: " . $fileinfo->get_filename(), DEBUG_WORDIMPORT);
-        $fileext = strtolower(pathinfo($fileinfo->get_filename(), PATHINFO_EXTENSION));
-        if ($fileext == 'png' or $fileext == 'jpg' or $fileext == 'jpeg' or $fileext == 'gif') {
-            $filename = $fileinfo->get_filename();
-            $filetype = ($fileext == 'jpg') ? 'jpeg' : $fileext;
-            $fileitemid = $fileinfo->get_itemid();
-            $filepath = $fileinfo->get_filepath();
-            $filedata = $fs->get_file($contextid, 'question', 'questiontext', $fileitemid, $filepath, $filename);
+    foreach ($questionslots as $qs) {
+        $question = question_bank::load_question($qs->id);
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($question->contextid, 'question', 'questiontext');
+        foreach ($files as $fileinfo) {
+            // Process image files, converting them into Base64 encoding.
+            debugging(__FUNCTION__ . ": questiontext file: " . $fileinfo->get_filename(), DEBUG_WORDIMPORT);
+            $fileext = strtolower(pathinfo($fileinfo->get_filename(), PATHINFO_EXTENSION));
+            if ($fileext == 'png' or $fileext == 'jpg' or $fileext == 'jpeg' or $fileext == 'gif') {
+                $filename = $fileinfo->get_filename();
+                $filetype = ($fileext == 'jpg') ? 'jpeg' : $fileext;
+                $fileitemid = $fileinfo->get_itemid();
+                $filepath = $fileinfo->get_filepath();
+                $filedata = $fs->get_file($question->contextid, 'question', 'questiontext', $fileitemid, $filepath, $filename);
 
-            if (!$filedata === false) {
-                $base64data = base64_encode($filedata->get_content());
-                $filedata = 'data:image/' . $filetype . ';base64,' . $base64data;
-                // Embed the image name and data into the HTML.
-                $imagestring .= '<img title="' . $filename . '" src="' . $filedata . '"/>';
+                if (!$filedata === false) {
+                    $base64data = base64_encode($filedata->get_content());
+                    $filedata = 'data:image/' . $filetype . ';base64,' . $base64data;
+                    // Embed the image name and data into the HTML.
+                    $imagestring .= '<img title="' . $filename . '" src="' . $filedata . '"/>';
+                }
             }
         }
     }
@@ -184,7 +182,7 @@ function handout_wordimport_base64_images($contextid) {
  * @param string $cdatastring XHTML from inside a CDATA_SECTION in a question text element
  * @return string
  */
-function booktool_wordimport_clean_html_text($cdatastring) {
+function handout_wordimport_clean_html_text($cdatastring) {
     // Escape double minuses, which cause XSLT processing to fail.
     $cdatastring = str_replace("--", "WORDIMPORTMinusMinus", $cdatastring);
 
@@ -203,21 +201,21 @@ function booktool_wordimport_clean_html_text($cdatastring) {
         $cleanxhtml = $cdatastring;
     }
 
-    // Fix up filenames after @@PLUGINFILE@@ to replace URL-encoded characters with ordinary characters.
-    $foundpluginfilenames = preg_match_all('~(.*?)<img src="@@PLUGINFILE@@/([^"]*)(.*)~s', $cleanxhtml,
-                                $pluginfilematches, PREG_SET_ORDER);
-    $nummatches = count($pluginfilematches);
-    if ($foundpluginfilenames and $foundpluginfilenames != 0) {
-        $urldecodedstring = "";
-        // Process the possibly-URL-escaped filename so that it matches the name in the file element.
-        for ($i = 0; $i < $nummatches; $i++) {
-            // Decode the filename and add the surrounding text.
-            $decodedfilename = urldecode($pluginfilematches[$i][2]);
-            $urldecodedstring .= $pluginfilematches[$i][1] . '<img src="@@PLUGINFILE@@/' . $decodedfilename .
-                                    $pluginfilematches[$i][3];
-        }
-        $cleanxhtml = $urldecodedstring;
-    }
+//    // Fix up filenames after @@PLUGINFILE@@ to replace URL-encoded characters with ordinary characters.
+//    $foundpluginfilenames = preg_match_all('~(.*?)<img src="@@PLUGINFILE@@/([^"]*)(.*)~s', $cleanxhtml,
+//                                $pluginfilematches, PREG_SET_ORDER);
+//    $nummatches = count($pluginfilematches);
+//    if ($foundpluginfilenames and $foundpluginfilenames != 0) {
+//        $urldecodedstring = "";
+//        // Process the possibly-URL-escaped filename so that it matches the name in the file element.
+//        for ($i = 0; $i < $nummatches; $i++) {
+//            // Decode the filename and add the surrounding text.
+//            $decodedfilename = urldecode($pluginfilematches[$i][2]);
+//            $urldecodedstring .= $pluginfilematches[$i][1] . '<img src="@@PLUGINFILE@@/' . $decodedfilename .
+//                                    $pluginfilematches[$i][3];
+//        }
+//        $cleanxhtml = $urldecodedstring;
+//    }
 
     // Strip soft hyphens (0xAD, or decimal 173).
     $cleanxhtml = preg_replace('/\xad/u', '', $cleanxhtml);
@@ -232,7 +230,7 @@ function booktool_wordimport_clean_html_text($cdatastring) {
  * @param string $filename name of file to be deleted
  * @return void
  */
-function booktool_wordimport_debug_unlink($filename) {
+function handout_wordimport_debug_unlink($filename) {
     if (DEBUG_WORDIMPORT !== DEBUG_DEVELOPER or !(debugging(null, DEBUG_DEVELOPER))) {
         unlink($filename);
     }

@@ -144,7 +144,7 @@
     <xsl:comment>Author ID: <xsl:value-of select="$author_id"/></xsl:comment>
     <xsl:comment>Author username: <xsl:value-of select="$moodle_username"/></xsl:comment>
     <xsl:comment>Contains embedded images: <xsl:value-of select="$contains_embedded_images"/></xsl:comment>
-    
+
     <!-- Handle the question tables -->
     <xsl:apply-templates select="$data/htm:html/htm:body/*"/>
     <!-- Check that the content has been successfully read in: if the title is empty, include an error message in the Word file rather than leave it blank -->
@@ -153,18 +153,19 @@
     </xsl:if>
 
     <!-- Add a table for images, if present -->
+<!--
     <xsl:if test="$contains_embedded_images != 0">
         <table border="1" style="display:none;"><thead>
         <tr><td colspan="7"><p class="Cell">&#160;</p></td><td><p class="QFType">Images</p></td></tr>
         <tr><td><p class="TableHead">ID</p></td><td><p class="TableHead">Name</p></td><td><p class="TableHead">Width</p></td><td><p class="TableHead">Height</p></td><td><p class="TableHead">Alt</p></td><td><p class="TableHead">Format</p></td><td><p class="TableHead">Encoding</p></td><td><p class="TableHead">Data</p></td></tr>
         </thead>
         <tbody>
-            <!-- Get images exported from Moodle 2.x as file elements -->
+            &lt;!&ndash; Get images exported from Moodle 2.x as file elements &ndash;&gt;
             <xsl:for-each select="$data//htm:img[contains(@src, $pluginfiles_string)]">
-                <!--<xsl:message><xsl:value-of select="concat('ImageTable:', @src)"/></xsl:message>-->
+                <xsl:message><xsl:value-of select="concat('ImageTable:', @src)"/></xsl:message>
                 <xsl:apply-templates select="." mode="ImageTable"/>
             </xsl:for-each>
-            <!-- Get images imported from Word2XML conversion process as embedded base64 images -->
+            &lt;!&ndash; Get images imported from Word2XML conversion process as embedded base64 images &ndash;&gt;
             <xsl:for-each select="$data//htm:img[starts-with(@src, $embeddedimagedata_string)]">
                 <xsl:if test="not(ancestor::htm:div/@class = 'ImageFile')">
                     <xsl:apply-templates select="." mode="ImageTable"/>
@@ -173,6 +174,7 @@
         </tbody>
         </table>
     </xsl:if>
+-->
 </xsl:template>
 
 <!-- Metadata -->
@@ -633,7 +635,7 @@
     <xsl:variable name="image_format">
         <xsl:choose>
         <xsl:when test="contains(@src, $pluginfiles_string)">
-            <!-- Image exported from Moodle 2.x, i.e. 
+            <!-- Image exported from Moodle 2.x, i.e.
                  <img src="@@PLUGINFILE@@/filename.gif"/> <file name="filename.gif" encoding="base64">{base64 data}</file> -->
             <xsl:value-of select="substring-after(substring-before(ancestor::htm:div[@class='chapter']//htm:div[@class = 'ImageFile' and htm:img/@title = $image_file_name]/htm:img/@src, ';'), 'data:image/')"/>
         </xsl:when>
@@ -784,12 +786,12 @@
     ISO-8859-1 based URL-encoding demo
     Written by Mike J. Brown, mike@skew.org.
     Updated 2002-05-20.
- 
+
     No license; use freely, but credit me if reproducing in print.
- 
+
     Also see http://skew.org/xml/misc/URI-i18n/ for a discussion of
     non-ASCII characters in URIs.
- 
+
 Copied from: https://gist.github.com/nils-werner/721650
 -->
 
