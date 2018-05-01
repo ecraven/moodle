@@ -248,7 +248,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Format the question data.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a question.
      * @param bool $solutions whether to show the solutions
      * @return null|string|string[]
      * @throws coding_exception
@@ -317,6 +317,9 @@ class quiz_handout_report extends quiz_attempts_report {
                 case 'qtype_mtf_question':
                     $this->processmultichoicequestion($randomquestion, $solutions);
                     break;
+                case 'qtype_ddwtos_question':
+                    $this->processddwtosquestion($randomquestion, $solutions);
+                    break;
                 default:
                     break;
             }
@@ -361,6 +364,9 @@ class quiz_handout_report extends quiz_attempts_report {
                     break;
                 case 'mtf':
                     $this->processmtfquestion($questiondata, $solutions);
+                    break;
+                case 'ddwtos':
+                    $this->processddwtosquestion($questiondata, $solutions);
                     break;
                 default:
                     break;
@@ -411,7 +417,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the cloze question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a cloze question.
      * @param bool $solutions whether to show the solutions.
      * @throws coding_exception
      */
@@ -898,7 +904,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the calculated question type and the calculated simple question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a calculated or calculated simple question.
      * @param bool $solutions whether to show the solutions.
      * @throws coding_exception
      * @throws dml_exception
@@ -1019,7 +1025,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the multichoice question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a multichoice question.
      * @param bool $solutions whether to show the solutions.
      * @throws coding_exception
      * @throws dml_exception
@@ -1174,7 +1180,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the multichoice_single and multichoice_multi question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a multichoice_single or multichoice_multi question.
      * @param bool $solutions whether to show the solutions.
      */
     public function processmultichoicequestion($questiondata, $solutions = false) {
@@ -1217,7 +1223,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the numerical question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a numerical question.
      * @param bool $solutions whether to show the solutions.
      */
     public function processnumericalquestion($questiondata, $solutions = false) {
@@ -1267,7 +1273,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the truefalse question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a truefalse question.
      * @param bool $solutions whether to show the solutions.
      * @throws coding_exception
      */
@@ -1305,7 +1311,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the matching question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a matching question.
      * @param bool $solutions whether to show the solutions.
      * @throws coding_exception
      */
@@ -1395,7 +1401,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the missing words question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a missing words question.
      * @param bool $solutions whether to show the solutions.
      * @throws coding_exception
      */
@@ -1500,7 +1506,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the kprime question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a kprime question.
      * @param bool $solutions whether to show the solutions.
      */
     public function processkprimequestion($questiondata, $solutions = false) {
@@ -1546,7 +1552,7 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the mtf question type.
      *
-     * @param object $questiondata the data defining a random question.
+     * @param object $questiondata the data defining a mtf question.
      * @param bool $solutions whether to show the solutions.
      */
     public function processmtfquestion($questiondata, $solutions = false) {
@@ -1585,6 +1591,111 @@ class quiz_handout_report extends quiz_attempts_report {
             $mtfoptionnumbering++;
         }
         $questiontext .= $mtfoptionstring;
+    }
+
+    /**
+     * Process the drag and drop into text question type.
+     *
+     * @param object $questiondata the data defining a drag and drop into text question.
+     * @param bool $solutions whether to show the solutions.
+     * @throws coding_exception
+     */
+    public function processddwtosquestion($questiondata, $solutions = false) {
+        // Missing words question type.
+        global $questiontext, $replacearray, $annotation, $annotationnumbering;
+        $ddwtosoptionnumbering = 0;
+        $ddwtosoptionstring = "";
+        $ddwtosoptions = array();
+        // Input field should be at least size 3.
+        $size = 3;
+        if (get_class($questiondata) == 'stdClass') {
+            $i = 1;
+            foreach ($questiondata->options->answers as $answer) {
+                // Looking for the largest option.
+                if (trim($answer->answer) != '') {
+                    $answeroption = $answer->answer;
+                    if (strlen((string)$answeroption) > $size) {
+                        $size = strlen((string)$answeroption);
+                    }
+                }
+            }
+            foreach ($questiondata->options->answers as $answer) {
+                $ddwtosoptions[] = $answer->answer;
+                if (trim($answer->answer) != '') {
+                    $questiontext .= "<p>";
+                    // Remove outer <p> </p>.
+                    $questiontext .= preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/!i', '$1',
+                        $answer->answer);
+                    $questiontext .= "</p>\n";
+                    if ($solutions) {
+                        // Solution.
+                        // In the order type value size style.
+                        $replacearray["#$i"] = "<input type=\"text\"" .
+                            " value=\"" . $answer->answer . "\"" .
+                            " size=\"" . $size . "\"" .
+                            " style=\"border: 1px dashed #000000; height: 24px;\"" .
+                            "/>&#160;<sup>*" . $i . "</sup>\n";
+                    } else {
+                        // Handout.
+                        // In the order type value size style.
+                        $spacesize = "";
+                        for($j = 1; $j <= $size; $j++) {
+                            $spacesize .= "&#160;&#160;";
+                        }
+                        $replacearray["$i"] = "<input type=\"text\"" .
+                            " value=\"" . $spacesize . "\"" .
+                            " size=\"" . $size . "\"" .
+                            " style=\"border: 1px dashed #000000; height: 24px;\"" .
+                            "/>&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                    }
+                }
+
+                $i++;
+                // Next answer.
+            }
+            if ($questiondata->options->shuffleanswers == 1) {
+                // Shuffle the array.
+                shuffle($ddwtosoptions);
+            }
+        }
+        if (get_class($questiondata) == 'qtype_ddwtos_question') {
+            foreach ($questiondata->choices as $choice) {
+                // Looking for the largest option.
+                if (trim($choice) != '') {
+                    if (strlen((string)$choice) > $size) {
+                        $size = strlen((string)$choice);
+                    }
+                }
+            }
+            foreach ($questiondata->stems as $question) {
+                if (trim($question) != '') {
+                    $questiontext .= "<p>";
+                    // Remove outer <p> </p>.
+                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $question);
+                    $questiontext .= "\n";
+                    $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
+                        "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;<sup>*</sup></p>\n";
+                }
+            }
+            foreach ($questiondata->choices as $choice) {
+                $ddwtosoptions[] = $choice;
+            }
+            if ($questiondata->shufflestems = 1) {
+                // Shuffle the array.
+                shuffle($ddwtosoptions);
+            }
+        }
+
+        foreach ($ddwtosoptions as $ddwtosoption) {
+            if ($ddwtosoptionnumbering == 0) {
+                $ddwtosoptionstring .= $ddwtosoption;
+            } else {
+                $ddwtosoptionstring .= " || " . $ddwtosoption;
+            }
+            $ddwtosoptionnumbering++;
+        }
+        $annotation = "<sup>*</sup>&#160;" . get_string('options', 'quiz_handout') . ": " .
+            $ddwtosoptionstring . "\n";
     }
 
     /**
