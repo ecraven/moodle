@@ -4,9 +4,6 @@
 [submodule "local/moodlecheck"]
 	path = local/moodlecheck
 	url = https://github.com/moodlehq/moodle-local_moodlecheck
-[submodule "mod/book/tool/wordimport"]
-	path = mod/book/tool/wordimport
-	url = https://github.com/ecampbell/moodle-booktool_wordimport
 [submodule "question/type/kprime"]
 	path = question/type/kprime
 	url = https://github.com/ethz-let/moodle-qtype_kprime

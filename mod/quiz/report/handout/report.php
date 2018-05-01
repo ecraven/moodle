@@ -319,6 +319,7 @@ class quiz_handout_report extends quiz_attempts_report {
                     break;
                 case 'qtype_ddwtos_question':
                     $this->processddwtosquestion($randomquestion, $solutions);
+                    $placeholdershavesquarebrackets = true;
                     break;
                 default:
                     break;
@@ -367,6 +368,7 @@ class quiz_handout_report extends quiz_attempts_report {
                     break;
                 case 'ddwtos':
                     $this->processddwtosquestion($questiondata, $solutions);
+                    $placeholdershavesquarebrackets = true;
                     break;
                 default:
                     break;
@@ -1596,12 +1598,14 @@ class quiz_handout_report extends quiz_attempts_report {
     /**
      * Process the drag and drop into text question type.
      *
+     * The *1 asterisk comes in when there are more than one groups.
+     *
      * @param object $questiondata the data defining a drag and drop into text question.
      * @param bool $solutions whether to show the solutions.
      * @throws coding_exception
      */
     public function processddwtosquestion($questiondata, $solutions = false) {
-        // Missing words question type.
+        // Drag and drop into text question type.
         global $questiontext, $replacearray, $annotation, $annotationnumbering;
         $ddwtosoptionnumbering = 0;
         $ddwtosoptionstring = "";
