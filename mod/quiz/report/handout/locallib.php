@@ -50,6 +50,10 @@ function handout_wordimport_export( $content ) {
      * @var string Stylesheet to export XHTML into Word-compatible XHTML
     */
     $exportstylesheet = 'xhtml2wordpass2.xsl';
+    /*
+     * @var string Set the offset for heading styles, default is h3 becomes Heading 1.
+    */
+    $heading1styleoffset = '3';
 
     // @codingStandardsIgnoreLine debugging(__FUNCTION__ . '($content = "' . str_replace("\n", "", substr($content, 80, 500)) . ' ...")', DEBUG_WORDIMPORT);
 
