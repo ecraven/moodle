@@ -662,12 +662,12 @@ class quiz_handout_report extends quiz_attempts_report {
                                 }
                                 if (($object->qtype == 'multichoice' && $answer->answerformat == 0) OR
                                     ( $object->qtype == 'multichoice' && $answer->answerformat == 1)) {
-                                    if (array_key_exists(get_string('options', 'quiz_handout') . ": $pulldownoptions",
+                                    if (array_key_exists($pulldownoptions,
                                         $annotationsarray)) {
-                                        $annotationsarray[get_string('options', 'quiz_handout') . ": $pulldownoptions"][] = $i;
+                                        $annotationsarray[$pulldownoptions][] = $i;
                                     } else {
                                         // Only if it doesn't already exist.
-                                        $annotationsarray[get_string('options', 'quiz_handout') . ": $pulldownoptions"] = array($i);
+                                        $annotationsarray[$pulldownoptions] = array($i);
                                     }
                                     $annotationnumbering++;
                                 }
@@ -866,7 +866,8 @@ class quiz_handout_report extends quiz_attempts_report {
                                         }
                                     }
                                     // TODO: Shuffle.
-                                    if ($pulldownoptionnumbering == 0) {
+                                    if ($pulldownoptions === '') {
+                                        // The first entry.
                                         $pulldownoptions .= $answer->answer;
                                     } else {
                                         $pulldownoptions .= " || " . $answer->answer;
@@ -894,12 +895,12 @@ class quiz_handout_report extends quiz_attempts_report {
                                         "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;<sup>*" .
                                         $annotationnumbering . "</sup>\n";
                                 }
-                                if (array_key_exists(get_string('options', 'quiz_handout') . ": $pulldownoptions",
+                                if (array_key_exists($pulldownoptions,
                                     $annotationsarray)) {
-                                    $annotationsarray[get_string('options', 'quiz_handout') . ": $pulldownoptions"][] = $i;
+                                    $annotationsarray["$pulldownoptions"][] = $i;
                                 } else {
                                     // Only if it doesn't already exist.
-                                    $annotationsarray[get_string('options', 'quiz_handout') . ": $pulldownoptions"] = array($i);
+                                    $annotationsarray["$pulldownoptions"] = array($i);
                                 }
                                 $annotationnumbering++;
                             } // Ende multichoice.
@@ -912,12 +913,16 @@ class quiz_handout_report extends quiz_attempts_report {
         // Routine to sort out multiple identical option fields.
         $singleannotationcounter = 1;
         $annotation = "";
+
         foreach ($annotationsarray as $uniqueannotation => $annotationvalues) {
             foreach ($annotationvalues as $annotationfield) {
                 $replacearray["#$annotationfield"] = $fieldsarray[$annotationfield] . "&#160;<sup>*" . $singleannotationcounter .
                     "</sup>\n";
             }
-            $annotation .= "<sup>*" . $singleannotationcounter . "</sup>&#160;$uniqueannotation<br />\n";
+            // Shuffle $uniqueannotation
+            $uniqueannotationelements = explode(' || ', $uniqueannotation);
+            shuffle($uniqueannotationelements);
+            $annotation .= "<sup>*" . $singleannotationcounter . "</sup>&#160;" . get_string('options', 'quiz_handout') . ": " . implode(' || ', $uniqueannotationelements) . "<br />\n";
             $singleannotationcounter++;
         }
         $annotation = "<p>" . $annotation. "</p>\n";
@@ -1434,9 +1439,6 @@ class quiz_handout_report extends quiz_attempts_report {
      * @throws coding_exception
      */
     public function processgapselectquestion($questiondata, $solutions = false) {
-        echo "\n\n\n\n\n";
-        echo json_encode($questiondata);
-        echo "\n\n\n\n\n";
         // Missing words question type.
         global $questiontext, $replacearray, $annotation, $annotationsarray, $fieldsarray;
         $gapselectoptionstring = "";
