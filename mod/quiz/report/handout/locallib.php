@@ -17,9 +17,9 @@
 /**
  * Import/Export Microsoft Word files library.
  *
- * @package    booktool_wordimport
- * @copyright  2016 Eoin Campbell
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   quiz_handout
+ * @copyright 2018 Luca Bösch <luca.boesch@bfh.ch>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
@@ -140,7 +140,7 @@ function handout_wordimport_export( $content ) {
  *
  * A string containing the HTML with embedded base64 images is returned
  *
- * @param string $quizid the quiz ID
+ * @param string $questionslots the quiz's question slots
  * @return string the modified HTML with embedded images
  */
 function handout_wordimport_base64_images($questionslots) {
@@ -204,22 +204,6 @@ function handout_wordimport_clean_html_text($cdatastring) {
     } else {
         $cleanxhtml = $cdatastring;
     }
-
-//    // Fix up filenames after @@PLUGINFILE@@ to replace URL-encoded characters with ordinary characters.
-//    $foundpluginfilenames = preg_match_all('~(.*?)<img src="@@PLUGINFILE@@/([^"]*)(.*)~s', $cleanxhtml,
-//                                $pluginfilematches, PREG_SET_ORDER);
-//    $nummatches = count($pluginfilematches);
-//    if ($foundpluginfilenames and $foundpluginfilenames != 0) {
-//        $urldecodedstring = "";
-//        // Process the possibly-URL-escaped filename so that it matches the name in the file element.
-//        for ($i = 0; $i < $nummatches; $i++) {
-//            // Decode the filename and add the surrounding text.
-//            $decodedfilename = urldecode($pluginfilematches[$i][2]);
-//            $urldecodedstring .= $pluginfilematches[$i][1] . '<img src="@@PLUGINFILE@@/' . $decodedfilename .
-//                                    $pluginfilematches[$i][3];
-//        }
-//        $cleanxhtml = $urldecodedstring;
-//    }
 
     // Strip soft hyphens (0xAD, or decimal 173).
     $cleanxhtml = preg_replace('/\xad/u', '', $cleanxhtml);

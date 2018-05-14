@@ -17,9 +17,8 @@
 /**
  * Atto text editor import Microsoft Word file and convert to HTML
  *
- * @package   booktool_wordimport
- * @copyright 2015 Eoin Campbell
- * @copyright 2005 Ziba Scott
+ * @package   quiz_handout
+ * @copyright 2018 Luca Bösch <luca.boesch@bfh.ch>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

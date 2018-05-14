@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Standard plugin entry points of the quiz statistics report.
+ * Standard plugin entry points of the quiz handout report.
  *
  * @package   quiz_handout
  * @copyright 2018 Luca Bösch <luca.boesch@bfh.ch>
@@ -37,6 +37,10 @@ defined('MOODLE_INTERNAL') || die();
  * @param array $args remaining file args.
  * @param bool $forcedownload.
  * @param array $options additional options affecting the file serving.
+ * @throws coding_exception
+ * @throws moodle_exception
+ * @throws require_login_exception
+ * @throws required_capability_exception
  */
 function quiz_handout_question_preview_pluginfile($previewcontext, $questionid,
         $filecontext, $filecomponent, $filearea, $args, $forcedownload, $options = array()) {
@@ -68,7 +72,7 @@ function quiz_handout_cron() {
 
     mtrace("\n  Cleaning up old quiz handout cache records...", '');
 
-    $expiretime = time() - 5*HOURSECS;
+    $expiretime = time() - 5 * HOURSECS;
     $DB->delete_records_select('quiz_handout', 'timemodified < ?', array($expiretime));
 
     return true;
