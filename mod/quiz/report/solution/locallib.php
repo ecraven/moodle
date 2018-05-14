@@ -1,0 +1,225 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Import/Export Microsoft Word files library.
+ *
+ * @package   quiz_solution
+ * @copyright 2018 Luca Bösch <luca.boesch@bfh.ch>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die;
+// Development: turn on all debug messages and strict warnings.
+define('DEBUG_WORDIMPORT', E_ALL);
+// @codingStandardsIgnoreLine define('DEBUG_WORDIMPORT', 0);
+
+require_once(dirname(__FILE__).'/xslemulatexslt.inc');
+require_once(dirname(__FILE__).'/report.php');
+
+/**
+ * Export book HTML into Word-compatible XHTML format
+ *
+ * Use an XSLT script to do the job, as it is much easier to implement this,
+ * and Moodle sites are guaranteed to have an XSLT processor available (I think).
+ *
+ * @param string $content all HTML content from a book or chapter
+ * @return string Word-compatible XHTML text
+ */
+function solution_wordimport_export( $content ) {
+    global $CFG, $USER, $COURSE, $OUTPUT;
+
+    /*
+     * @var string export template with Word-compatible CSS style definitions
+    */
+    $wordfiletemplate = 'wordfiletemplate.html';
+    /*
+     * @var string Stylesheet to export XHTML into Word-compatible XHTML
+    */
+    $exportstylesheet = 'xhtml2wordpass2.xsl';
+    /*
+     * @var string Set the offset for heading styles, default is h3 becomes Heading 1.
+    */
+    $heading1styleoffset = '3';
+
+    // @codingStandardsIgnoreLine debugging(__FUNCTION__ . '($content = "' . str_replace("\n", "", substr($content, 80, 500)) . ' ...")', DEBUG_WORDIMPORT);
+
+    // XHTML template for Word file CSS styles formatting.
+    $htmltemplatefilepath = __DIR__ . "/" . $wordfiletemplate;
+    $stylesheet = __DIR__ . "/" . $exportstylesheet;
+
+    // Check that XSLT is installed, and the XSLT stylesheet and XHTML template are present.
+    if (!class_exists('XSLTProcessor') || !function_exists('xslt_create')) {
+        echo $OUTPUT->notification(get_string('xsltunavailable', 'quiz_solution'));
+        return false;
+    } else if (!file_exists($stylesheet)) {
+        // Stylesheet to transform Moodle Question XML into Word doesn't exist.
+        echo $OUTPUT->notification(get_string('stylesheetunavailable', 'quiz_solution', $stylesheet));
+        return false;
+    }
+
+    // Get a temporary file name for storing the book/chapter XHTML content to transform.
+    if (!($tempxmlfilename = tempnam($CFG->tempdir . DIRECTORY_SEPARATOR, "b2w-"))) {
+        echo $OUTPUT->notification(get_string('cannotopentempfile', 'quiz_solution', basename($tempxmlfilename)));
+        return false;
+    }
+    unlink($tempxmlfilename);
+    $tempxhtmlfilename = $CFG->tempdir . DIRECTORY_SEPARATOR . basename($tempxmlfilename, ".tmp") . ".xhtm";
+
+    // Uncomment next line to give XSLT as much memory as possible, to enable larger Word files to be exported.
+    // @codingStandardsIgnoreLine raise_memory_limit(MEMORY_HUGE);
+
+    $cleancontent = solution_wordimport_clean_html_text($content);
+
+    // Set parameters for XSLT transformation. Note that we cannot use $arguments though.
+    $parameters = array (
+        'course_id' => $COURSE->id,
+        'course_name' => $COURSE->fullname,
+        'author_name' => $USER->firstname . ' ' . $USER->lastname,
+        'moodle_country' => $USER->country,
+        'moodle_language' => current_language(),
+        'moodle_textdirection' => (right_to_left()) ? 'rtl' : 'ltr',
+        'moodle_release' => $CFG->release,
+        'moodle_url' => $CFG->wwwroot . "/",
+        'moodle_username' => $USER->username,
+        'debug_flag' => debugging('', DEBUG_WORDIMPORT),
+        'heading1stylelevel' => $heading1styleoffset,
+        'transformationfailed' => get_string('transformationfailed', 'quiz_solution', $exportstylesheet)
+    );
+
+    // Write the book contents and the HTML template to a file.
+    $xhtmloutput = "<container>\n<container><html xmlns='http://www.w3.org/1999/xhtml'><body>" .
+            $cleancontent . "</body></html></container>\n<htmltemplate>\n" .
+            file_get_contents($htmltemplatefilepath) . "\n</htmltemplate>\n</container>";
+    if ((file_put_contents($tempxhtmlfilename, $xhtmloutput)) == 0) {
+        echo $OUTPUT->notification(get_string('cannotwritetotempfile', 'quiz_solution', basename($tempxhtmlfilename)));
+        return false;
+    }
+
+    // Prepare for Pass 2 XSLT transformation (Pass 1 not needed because books, unlike questions, are already HTML.
+    $stylesheet = __DIR__ . "/" . $exportstylesheet;
+    $xsltproc = xslt_create();
+    if (!($xsltoutput = xslt_process($xsltproc, $tempxhtmlfilename, $stylesheet, null, null, $parameters))) {
+        echo $OUTPUT->notification(get_string('transformationfailed', 'quiz_solution', $stylesheet));
+        solution_wordimport_debug_unlink($tempxhtmlfilename);
+        return false;
+    }
+    solution_wordimport_debug_unlink($tempxhtmlfilename);
+
+    // Strip out any redundant namespace attributes, which XSLT on Windows seems to add.
+    $xsltoutput = str_replace(' xmlns=""', '', $xsltoutput);
+    $xsltoutput = str_replace(' xmlns="http://www.w3.org/1999/xhtml"', '', $xsltoutput);
+    // Unescape double minuses if they were substituted during CDATA content clean-up.
+    $xsltoutput = str_replace("WORDIMPORTMinusMinus", "--", $xsltoutput);
+
+    // Strip off the XML declaration, if present, since Word doesn't like it.
+    if (strncasecmp($xsltoutput, "<?xml ", 5) == 0) {
+        $content = substr($xsltoutput, strpos($xsltoutput, "\n"));
+    } else {
+        $content = $xsltoutput;
+    }
+
+    return $content;
+}   // End booktool_wordimport_export function.
+
+/**
+ * Get images and write them as base64 inside the HTML content
+ *
+ * A string containing the HTML with embedded base64 images is returned
+ *
+ * @param string $questionslots the quiz's question slots
+ * @return string the modified HTML with embedded images
+ */
+function solution_wordimport_base64_images($questionslots) {
+    // Get the list of files embedded in the quiz.
+    $imagestring = '';
+    foreach ($questionslots as $qs) {
+        $question = question_bank::load_question($qs->id);
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($question->contextid, 'question', 'questiontext');
+        foreach ($files as $fileinfo) {
+            // Process image files, converting them into Base64 encoding.
+            debugging(__FUNCTION__ . ": questiontext file: " . $fileinfo->get_filename(), DEBUG_WORDIMPORT);
+            $fileext = strtolower(pathinfo($fileinfo->get_filename(), PATHINFO_EXTENSION));
+            if ($fileext == 'png' or $fileext == 'jpg' or $fileext == 'jpeg' or $fileext == 'gif') {
+                $filename = $fileinfo->get_filename();
+                $filetype = ($fileext == 'jpg') ? 'jpeg' : $fileext;
+                $fileitemid = $fileinfo->get_itemid();
+                $filepath = $fileinfo->get_filepath();
+                $filedata = $fs->get_file($question->contextid, 'question', 'questiontext', $fileitemid, $filepath, $filename);
+
+                if (!$filedata === false) {
+                    $base64data = base64_encode($filedata->get_content());
+                    $filedata = 'data:image/' . $filetype . ';base64,' . $base64data;
+                    // Embed the image name and data into the HTML.
+                    $imagestring .= '<img title="' . $filename . '" src="' . $filedata . '"/>';
+                }
+            }
+        }
+    }
+
+    if ($imagestring != '') {
+        return '<div class="ImageFile">' . $imagestring . '</div>';
+    }
+    return '';
+}
+
+
+/**
+ * Clean HTML content
+ *
+ * A string containing clean XHTML is returned
+ *
+ * @param string $cdatastring XHTML from inside a CDATA_SECTION in a question text element
+ * @return string
+ */
+function solution_wordimport_clean_html_text($cdatastring) {
+    // Escape double minuses, which cause XSLT processing to fail.
+    $cdatastring = str_replace("--", "WORDIMPORTMinusMinus", $cdatastring);
+
+    // Wrap the string in a HTML wrapper, load it into a new DOM document as HTML, but save as XML.
+    $doc = new DOMDocument();
+    libxml_use_internal_errors(true);
+    $doc->loadHTML('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><html><body>' . $cdatastring . '</body></html>');
+    $doc->getElementsByTagName('html')->item(0)->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    $xml = $doc->saveXML();
+
+    $bodystart = stripos($xml, '<body>') + strlen('<body>');
+    $bodylength = strripos($xml, '</body>') - $bodystart;
+    if ($bodystart || $bodylength) {
+        $cleanxhtml = substr($xml, $bodystart, $bodylength);
+    } else {
+        $cleanxhtml = $cdatastring;
+    }
+
+    // Strip soft hyphens (0xAD, or decimal 173).
+    $cleanxhtml = preg_replace('/\xad/u', '', $cleanxhtml);
+
+    return $cleanxhtml;
+}
+
+
+/**
+ * Delete temporary files if debugging disabled
+ *
+ * @param string $filename name of file to be deleted
+ * @return void
+ */
+function solution_wordimport_debug_unlink($filename) {
+    if (DEBUG_WORDIMPORT !== DEBUG_DEVELOPER or !(debugging(null, DEBUG_DEVELOPER))) {
+        unlink($filename);
+    }
+}
