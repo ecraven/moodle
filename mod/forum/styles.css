@@ -139,6 +139,11 @@
     white-space: nowrap;
 }
 
+.path-mod-forum .forumheaderlist thead .topic,
+.path-mod-forum .forumheaderlist thead .author {
+    text-align: left;
+}
+
 .path-mod-forum .forumheaderlist thead .discussionsubscription {
     text-align: center;
 }
