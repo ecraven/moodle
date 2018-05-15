@@ -17357,6 +17357,10 @@ body.path-mod-feedback #region-main .mform.feedback_form .feedback-item-pagebrea
 .path-mod-forum .forumheaderlist .discussion .lastpost {
   vertical-align: top;
 }
+.path-mod-forum .forumheaderlist .discussion .picture {
+  margin: 0 20px 0 0;
+  float: left;
+}
 .path-mod-forum .forumheaderlist .discussion .unread img {
   margin: 0;
 }
