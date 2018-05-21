@@ -41,7 +41,6 @@ class core_admin_renderer extends plugin_renderer_base {
         $output = '';
 
         $copyrightnotice = text_to_html(get_string('gpl3'));
-        $copyrightnotice = str_replace('target="_blank"', 'onclick="this.target=\'_blank\'"', $copyrightnotice); // extremely ugly validation hack
 
         $continue = new single_button(new moodle_url($this->page->url, array(
             'lang' => $CFG->lang, 'agreelicense' => 1)), get_string('continue'), 'get');
@@ -934,7 +933,6 @@ class core_admin_renderer extends plugin_renderer_base {
      */
     protected function release_notes_link() {
         $releasenoteslink = get_string('releasenoteslink', 'admin', 'http://docs.moodle.org/dev/Releases');
-        $releasenoteslink = str_replace('target="_blank"', 'onclick="this.target=\'_blank\'"', $releasenoteslink); // extremely ugly validation hack
         return $this->box($releasenoteslink, 'generalbox releasenoteslink');
     }
 
