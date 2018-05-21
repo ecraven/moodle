@@ -406,7 +406,8 @@ function install_print_footer($config, $reload=false) {
     echo '</fieldset><fieldset id="nav_buttons">'.$first.$next.'</fieldset>';
 
     $homelink  = '<div class="sitelink">'.
-       '<a title="Moodle '. $CFG->target_release .'" href="http://docs.moodle.org/en/Administrator_documentation" onclick="this.target=\'_blank\'">'.
+       '<a title="Moodle ' . $CFG->target_release .
+       '" href="http://docs.moodle.org/en/Administrator_documentation" target="_blank">' .
        '<img src="pix/moodlelogo.png" alt="'.get_string('moodlelogo').'" /></a></div>';
 
     echo '</form></div>';
