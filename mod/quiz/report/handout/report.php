@@ -166,14 +166,14 @@ class quiz_handout_report extends quiz_attempts_report {
      *
      * @param object $quiz this quiz.
      * @param object $cm the course module for this quiz.
+     * @param bool $solutions whether to print the solutions.
      * @return string the handout to display or print to doc.
      * @throws coding_exception
      */
-    public function writehandout($quiz, $cm) {
+    public function writehandout($quiz, $cm, $solutions = false) {
         global $OUTPUT, $quiz, $displayoptions;
 
         $questionheaders = array();
-        $solutions = false;
         $questionslots = $this->quiz_report_get_all_question_slots($quiz);
 
         /* bsl3 following code from /mod/quiz/review.php */
@@ -212,12 +212,14 @@ class quiz_handout_report extends quiz_attempts_report {
                         if (isset($question->responseformat)) {
                             /* white fields for editor answers with lines equal to responsefieldlines */
                             if ($question->responseformat == "editor" OR $question->responseformat == "monospaced") {
-                                if ($solutions) { // Solution.
+                                if ($solutions) {
+                                    // Solution.
                                     $boxtext = get_string('singlesolution', 'quiz_handout') . ":<br />\n";
                                     // This are the graderinfo informations, as there is no such thing as solution
                                     // to the essay question type.
                                     $boxtext .= $question->graderinfo;
-                                } else { /* Handout. */
+                                } else {
+                                    // Handout.
                                     $boxtext = "";
                                     if ($question->responsefieldlines != 0) {
                                         for ($i = 0; $i < $question->responsefieldlines; $i++) {
@@ -439,7 +441,7 @@ class quiz_handout_report extends quiz_attempts_report {
         global $annotation, $annotationnumbering, $replacearray, $annotationsarray, $fieldsarray;
         if (get_class($questiondata) == 'stdClass') {
             // When coming from 'normal' question context.
-            $multiansweroptionscount = count($questiondata->options);
+            $multiansweroptionscount = count((array)$questiondata->options);
             // Check whether it has at least 1 question.
         }
         if (get_class($questiondata) == 'qtype_multianswer_question') {
@@ -466,7 +468,7 @@ class quiz_handout_report extends quiz_attempts_report {
                     $correctanswerscounter = 0;
                     $correctanswers = array();
                     if ($object->questiontext) {
-                        $multianswerquestionsoptionscount = count($object->options);
+                        $multianswerquestionsoptionscount = count((array)$object->options);
                         if ($multianswerquestionsoptionscount > 0) {
                             $multianswerquestionsoptionsanswerscount = count($object->options->answers);
                             if ($multianswerquestionsoptionsanswerscount > 0) {
@@ -705,7 +707,6 @@ class quiz_handout_report extends quiz_attempts_report {
                                         if ($size > 50) {
                                             $size = 50;
                                         }
-                                        // Handout.
                                         // In the order type value size style.
                                         $spacesize = "";
                                         for ($j = 1; $j <= $size; $j++) {
@@ -785,7 +786,8 @@ class quiz_handout_report extends quiz_attempts_report {
                             } // Ende numerical.
                             /* shortanswer (2) gäbe eine Linie */
                             if (get_class($object->qtype) == 'qtype_shortanswer') {
-                                if ($solutions) { // Solution.
+                                if ($solutions) {
+                                    // Solution.
                                     foreach ($object->answers as $answer) {
                                         if ($answer->fraction > 0.0000000) {
                                             $correctanswers[$correctanswerscounter]['answer'] = $answer->answer;
@@ -798,7 +800,8 @@ class quiz_handout_report extends quiz_attempts_report {
                                             $correctanswerscounter++;
                                         }
                                     }
-                                } else { // Handout.
+                                } else {
+                                    // Handout.
                                     foreach ($object->answers as $answer) {
                                         if (strlen((string)$answer->answer) > $size) {
                                             $size = strlen((string)$answer->answer);
@@ -813,7 +816,8 @@ class quiz_handout_report extends quiz_attempts_report {
                                 if ($size > 50) {
                                     $size = 50;
                                 }
-                                if ($solutions) { // Solution.
+                                if ($solutions) {
+                                    // Solution.
                                     if (count($correctanswers) == 1) { // Just one solution.
                                         $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
                                             "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"" .
@@ -838,7 +842,8 @@ class quiz_handout_report extends quiz_attempts_report {
                                         $annotation .= "<br />\n";
                                         $annotationnumbering++;
                                     }
-                                } else { // Handout.
+                                } else {
+                                    // Handout.
                                     $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
                                         "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"\">";
                                 }
@@ -848,7 +853,8 @@ class quiz_handout_report extends quiz_attempts_report {
                                 // Multichoice.
                                 // Rewrite pulldown menu answer options.
                                 foreach ($object->answers as $answer) {
-                                    if ($solutions) { // Solution.
+                                    if ($solutions) {
+                                        // Solution.
                                         if ($answer->fraction > 0.0000000) {
                                             $correctanswers[$correctanswerscounter]['answer'] = $answer->answer;
                                             $correctanswers[$correctanswerscounter]['percent'] =
@@ -859,7 +865,8 @@ class quiz_handout_report extends quiz_attempts_report {
                                             }
                                             $correctanswerscounter++;
                                         }
-                                    } else { // Handout.
+                                    } else {
+                                        // Handout.
                                         // Multiple answers could be correct, set the correct answer length to the longest.
                                         if (strlen((string)$answer->answer) > $size) {
                                             $size = strlen((string)$answer->answer);
@@ -877,9 +884,10 @@ class quiz_handout_report extends quiz_attempts_report {
                                 if ($size > 50) {
                                     $size = 50;
                                 }
-                                if ($solutions) { // Solution.
+                                if ($solutions) {
+                                    // Solution.
                                     if (count($correctanswers) == 1) { // Just one solution.
-                                        $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
+                                        $fieldsarray[$i] = "<input type=\"text\" size=\"" . $size .
                                             "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"" .
                                             $correctanswers[0]['answer'] . "\"/>&#160;<sup>*" . $i . "</sup>\n";
                                     } else {
@@ -887,7 +895,8 @@ class quiz_handout_report extends quiz_attempts_report {
                                             "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;<sup>*" .
                                             $annotationnumbering . "</sup>\n";
                                     }
-                                } else { // Handout.
+                                } else {
+                                    // Handout.
                                     $fieldsarray[$i] = "<input type=\"text\" size=\"" . $size .
                                         "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"\"/>";
                                     $replacearray["#$i"] = "<input type=\"text\" size=\"" . $size .
@@ -1310,12 +1319,23 @@ class quiz_handout_report extends quiz_attempts_report {
         // Truefalse question type.
         global $CFG, $DB, $questiontext, $replacearray;
         require_once($CFG->dirroot . '/question/type/truefalse/questiontype.php');
+        $correctanswerscounter = 0;
+        $correctanswers = array();
         $truefalseoptionnumbering = 0;
         $truefalseoptionstring = "";
         $truefalseoptions = array();
 
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->answers as $answer) {
+                if ($solutions) {
+                    if ($answer->fraction > 0.0000000) {
+                        $correctanswers[$correctanswerscounter]['answer'] = preg_replace('!^<p>(.*?)</p>$!i',
+                            '$1', $answer->answer);
+                        $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction,
+                            0, 8) . "%";
+                        $correctanswerscounter++;
+                    }
+                }
                 // Remove outer <p> </p>.
                 $truefalseoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->answer);
             }
@@ -1328,9 +1348,21 @@ class quiz_handout_report extends quiz_attempts_report {
 
         foreach ($truefalseoptions as $truefalseoption) {
             if ($truefalseoptionnumbering == 0) {
-                $truefalseoptionstring .= "<p><input type=\"radio\" />&#160;" . $truefalseoption . "</p>\n";
+                $truefalseoptionstring .= "<p><input type=\"radio\"";
+                if ($solutions) {
+                    if ($correctanswers[0]['answer'] == $truefalseoption) {
+                        $truefalseoptionstring .= "checked=\"checked\"";
+                    }
+                }
+                $truefalseoptionstring .= "/>&#160;" . $truefalseoption . "</p>\n";
             } else {
-                $truefalseoptionstring .= "<p><input type=\"radio\" />&#160;" . $truefalseoption . "</p>\n";
+                $truefalseoptionstring .= "<p><input type=\"radio\"";
+                if ($solutions) {
+                    if ($correctanswers[0]['answer'] == $truefalseoption) {
+                        $truefalseoptionstring .= "checked=\"checked\"";
+                    }
+                }
+                $truefalseoptionstring .= "/>&#160;" . $truefalseoption . "</p>\n";
             }
             $truefalseoptionnumbering++;
         }
@@ -1480,6 +1512,10 @@ class quiz_handout_report extends quiz_attempts_report {
                     if ($solutions) {
                         // Solution.
                         // In the order type value size style.
+                        $fieldsarray[$i] = "<input type=\"text\"" .
+                            " value=\"" . $answer->answer . "\"" .
+                            " size=\"" . $size . "\"" .
+                            " style=\"border: 1px dashed #000000; height: 24px;\"/>";
                         $replacearray["$i"] = "<input type=\"text\"" .
                             " value=\"" . $answer->answer . "\"" .
                             " size=\"" . $size . "\"" .

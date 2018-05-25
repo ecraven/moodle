@@ -63,6 +63,7 @@ $string['regradecomplete'] = 'Regrade completed successfully';
 $string['regradeheader'] = 'Regrading';
 $string['regradeselected'] = 'Regrade selected attempts';
 $string['regradingattemptxofy'] = 'Regrading attempt ({$a->done}/{$a->count})';
+$string['singlesolution'] = 'Solution';
 $string['show'] = 'Show / download';
 $string['showattempts'] = 'Only show / download attempts';
 $string['showdetailedmarks'] = 'Marks for each question';
