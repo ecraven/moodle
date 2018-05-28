@@ -1585,15 +1585,24 @@ class quiz_handout_report extends quiz_attempts_report {
         // Kprime question type.
         global $CFG, $DB, $questiontext, $replacearray;
         $kprimeoptionnumbering = 0;
+        $kprimeoptionscounter = 0;
         $kprimeoptions = array();
         $kprimeoptionstring = "";
         $kprimeresponse1 = "";
         $kprimeresponse2 = "";
+        $correctanswerscounter = 0;
+        $correctanswers = array();
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->rows as $answer) {
                 // Remove outer <p> </p>.
-                $kprimeoptions[] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/', '$1',
+                $kprimeoptions[$kprimeoptionscounter]['optiontext'] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/', '$1',
                     $answer->optiontext);
+                $kprimeoptionscounter++;
+            }
+            foreach ($questiondata->options->weights as $weight) {
+                $kprimeoptions[$correctanswerscounter]['response_1weight'] = $weight[1]->weight;
+                $kprimeoptions[$correctanswerscounter]['response_2weight'] = $weight[2]->weight;
+                $correctanswerscounter++;
             }
         }
 
@@ -1606,17 +1615,23 @@ class quiz_handout_report extends quiz_attempts_report {
                 shuffle($kprimeoptions);
             }
         }
+
         foreach ($kprimeoptions as $kprimeoption) {
-            if ($kprimeoptionnumbering == 0) {
-                $kprimeoptionstring .= "<p>$kprimeresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
-                    "<input type=\"checkbox\" />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" .
-                    $kprimeoption . "</p>\n";
-            } else {
-                $kprimeoptionstring .= "<p>$kprimeresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
-                    "<input type=\"checkbox\" />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" .
-                    $kprimeoption . "</p>\n";
+            $kprimeoptionstring .= "<p>$kprimeresponse1&#160;<input type=\"checkbox\"";
+            if ($solutions) {
+                if ($kprimeoption['response_1weight'] == 1) {
+                    $kprimeoptionstring .= " checked=\"checked\"";
+                }
             }
-            $kprimeoptionnumbering++;
+            $kprimeoptionstring .= " />&#160;&#160;" .
+                "<input type=\"checkbox\"";
+            if ($solutions) {
+                if ($kprimeoption['response_2weight'] == 1) {
+                    $kprimeoptionstring .= " checked=\"checked\"";
+                }
+            }
+            $kprimeoptionstring .= " />&#160;$kprimeresponse2&#160;&#160;&#160;&#160;&#160;&#160;" .
+                $kprimeoption['optiontext'] . "</p>\n";
         }
         $questiontext .= $kprimeoptionstring;
     }
