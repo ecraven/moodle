@@ -240,6 +240,16 @@ div#dock {
 #page-mod-lesson-view .branchbuttoncontainer .singlebutton button[type="submit"] {
     white-space: normal;
 }
+
+#page-mod-lesson-view {
+    .vertical .singlebutton {
+        display: block;
+        + .singlebutton {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+    }
+}
 .path-mod-lesson .generaltable td {
     vertical-align: middle;
     label {
@@ -253,7 +263,14 @@ div#dock {
         display: block;
     }
 }
-
+.path-mod-lesson {
+    .progress_bar_completed {
+        background-color: green;
+        text-align: right;
+        vertical-align: middle;
+        color: #fff;
+    }
+}
 .path-mod-wiki .wiki_headingtitle,
 .path-mod-wiki .midpad,
 .path-mod-wiki .wiki_headingtime {
