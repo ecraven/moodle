@@ -108,6 +108,8 @@ class quiz_handout_report extends quiz_attempts_report {
 
             $htmloutput = str_replace ('<input type="checkbox" />',
                 '<span style="font-size: 15pt; font-family: Arial;">&#x25a1;</span>', $htmloutput);
+            $htmloutput = str_replace ('<input type="checkbox" checked="checked" />',
+                '<span style="font-size: 10pt; font-family: Arial;">&#x2612;</span>', $htmloutput);
             $htmloutput = str_replace ('<input type="radio" />',
                 '<span style="font-size: 15pt; font-family: Arial;">&#x25cb;</span>', $htmloutput);
             $htmloutput = preg_replace('/<input type="text" value="(.+?)" size="(.+?)" style="border: 1px dashed #000000; ' .
@@ -115,7 +117,6 @@ class quiz_handout_report extends quiz_attempts_report {
                 '<span style ="border: 1px dashed #000000; padding-left: 0.5em; padding-right: 0.5em; height: 24px">$1</span>',
                 $htmloutput);
 
-            file_put_contents('/Users/luca/Desktop/log0.txt', $htmloutput);
             $docxcontent = handout_wordimport_export($htmloutput);
             send_file($docxcontent, $filename, 10, 0, true, array('filename' => $filename));
             die;
@@ -612,7 +613,12 @@ class quiz_handout_report extends quiz_attempts_report {
                                                 if ($size > 50) {
                                                     $size = 50;
                                                 }
-                                                $replacearray["#$i"] = "<input type=\"text\"" .
+                                                $fieldsarray[$i] = "<input type=\"text\"" .
+                                                    " value=\"" . $correctanswers[0]['answer'] . "\"" .
+                                                    " size=\"" . $size . "\"" .
+                                                    " style=\"border: 1px dashed #000000; height: 24px;\"" .
+                                                    "/>";
+                                                $replacearray["$i"] = "<input type=\"text\"" .
                                                     " value=\"" . $correctanswers[0]['answer'] . "\"" .
                                                     " size=\"" . $size . "\"" .
                                                     " style=\"border: 1px dashed #000000; height: 24px;\"" .
@@ -921,7 +927,6 @@ class quiz_handout_report extends quiz_attempts_report {
         // Routine to sort out multiple identical option fields.
         $singleannotationcounter = 1;
         $annotation = "";
-
         foreach ($annotationsarray as $uniqueannotation => $annotationvalues) {
             foreach ($annotationvalues as $annotationfield) {
                 $replacearray["#$annotationfield"] = $fieldsarray[$annotationfield] . "&#160;<sup>*" . $singleannotationcounter .
@@ -1229,33 +1234,81 @@ class quiz_handout_report extends quiz_attempts_report {
         $multichoiceoptionnumbering = 0;
         $multichoiceoptions = array();
         $multichoiceoptionstring = "";
+        $correctanswerscounter = 0;
+        $correctanswers = array();
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->answers as $answer) {
                 // Remove outer <p> </p>.
                 $multichoiceoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->answer); /* remove outer <p> </p> */
+                if ($solutions) {
+                    if ($answer->fraction > 0.0000000) {
+                        $correctanswers[$correctanswerscounter]['answer'] = preg_replace('!^<p>(.*?)</p>$!i', '$1',
+                            $answer->answer);
+                        $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction, 0, 8) . "%";
+                        $correctanswerscounter++;
+                    }
+                }
             }
         }
         if ((get_class($questiondata) == 'qtype_multichoice_single_question') OR
-            ( get_class($questiondata) == 'qtype_multichoice_multi_question')) {
+            (get_class($questiondata) == 'qtype_multichoice_multi_question')) {
             foreach ($questiondata->answers as $answer) {
                 // Remove outer <p> </p>.
                 $multichoiceoptions[] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/', '$1',
                     $answer->answer);
+                if ($solutions) {
+                    if ($answer->fraction > 0.0000000) {
+                        $correctanswers[$correctanswerscounter]['answer'] = preg_replace('!^<p>(.*?)</p>$!i', '$1',
+                            $answer->answer);
+                        $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction, 0, 8) . "%";
+                        $correctanswerscounter++;
+                    }
+                }
             }
         }
         if ($questiondata->options->shuffleanswers == 1) {
             // Shuffle the array.
             shuffle($multichoiceoptions);
         }
-        foreach ($multichoiceoptions as $multichoiceoption) {
-            if ($multichoiceoptionnumbering == 0) {
-                $multichoiceoptionstring .= "<p><input type=\"checkbox\" />&#160;" . $multichoiceoption . "</p>\n";
-            } else {
-                $multichoiceoptionstring .= "<p><input type=\"checkbox\" />&#160;" . $multichoiceoption . "</p>\n";
+        if ($solutions) {
+            $correctanswervalues = array();
+            foreach ($correctanswers as $key => $values) {
+                $correctanswervalues[] = $values['answer'];
             }
+        }
+        foreach ($multichoiceoptions as $multichoiceoption) {
+            $multichoiceoptionstring .= "<p><input type=\"checkbox\"";
+            if ($solutions) {
+                if (count((array)$correctanswers) == 1) {
+                    // Just one answer.
+                    if ($correctanswers[0]['answer'] == $multichoiceoption) {
+                        $multichoiceoptionstring .= " checked=\"checked\"";
+                    }
+                } else {
+                    // More than one answer.
+                    if (array_search($multichoiceoption, $correctanswervalues) !== false) {
+                        $multichoiceoptionstring .= " checked=\"checked\"";
+                    }
+                }
+            }
+            $multichoiceoptionstring .= " />&#160;" . $multichoiceoption . "</p>\n";
             $multichoiceoptionnumbering++;
         }
         $questiontext .= $multichoiceoptionstring;
+        if ($solutions) {
+            if (count((array)$correctanswers) > 1) {
+                // More than one solution.
+                $questiontext .= "<br />&#160;<br />" . get_string('multiplesolutions', 'quiz_solution') . ": ";
+                $firstsolutionanswer = 0;
+                foreach ($correctanswers as $solutionanswer) {
+                    if ($firstsolutionanswer > 0) {
+                        $questiontext .= " / ";
+                    }
+                    $questiontext .= $solutionanswer['answer'] . " (" . $solutionanswer['percent'] . ")";
+                    $firstsolutionanswer++;
+                }
+            }
+        }
     }
 
     /**
@@ -1351,18 +1404,18 @@ class quiz_handout_report extends quiz_attempts_report {
                 $truefalseoptionstring .= "<p><input type=\"radio\"";
                 if ($solutions) {
                     if ($correctanswers[0]['answer'] == $truefalseoption) {
-                        $truefalseoptionstring .= "checked=\"checked\"";
+                        $truefalseoptionstring .= " checked=\"checked\"";
                     }
                 }
-                $truefalseoptionstring .= "/>&#160;" . $truefalseoption . "</p>\n";
+                $truefalseoptionstring .= " />&#160;" . $truefalseoption . "</p>\n";
             } else {
                 $truefalseoptionstring .= "<p><input type=\"radio\"";
                 if ($solutions) {
                     if ($correctanswers[0]['answer'] == $truefalseoption) {
-                        $truefalseoptionstring .= "checked=\"checked\"";
+                        $truefalseoptionstring .= " checked=\"checked\"";
                     }
                 }
-                $truefalseoptionstring .= "/>&#160;" . $truefalseoption . "</p>\n";
+                $truefalseoptionstring .= " />&#160;" . $truefalseoption . "</p>\n";
             }
             $truefalseoptionnumbering++;
         }
