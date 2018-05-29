@@ -111,7 +111,9 @@ class quiz_handout_report extends quiz_attempts_report {
             $htmloutput = str_replace ('<input type="checkbox" checked="checked" />',
                 '<span style="font-size: 10pt; font-family: Arial;">&#x2612;</span>', $htmloutput);
             $htmloutput = str_replace ('<input type="radio" />',
-                '<span style="font-size: 15pt; font-family: Arial;">&#x25cb;</span>', $htmloutput);
+                '<span style="font-size: 10pt; font-family: Arial;">&#x25ef;</span>', $htmloutput);
+            $htmloutput = str_replace ('<input type="radio" checked="checked" />',
+                '<span style="font-size: 10pt; font-family: Arial;">&#x29bf;</span>', $htmloutput);
             $htmloutput = preg_replace('/<input type="text" value="(.+?)" size="(.+?)" style="border: 1px dashed #000000; ' .
                 'height: 24px;"\/>/',
                 '<span style ="border: 1px dashed #000000; padding-left: 0.5em; padding-right: 0.5em; height: 24px">$1</span>',
@@ -1637,14 +1639,12 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processkprimequestion($questiondata, $solutions = false) {
         // Kprime question type.
         global $CFG, $DB, $questiontext, $replacearray;
-        $kprimeoptionnumbering = 0;
         $kprimeoptionscounter = 0;
         $kprimeoptions = array();
         $kprimeoptionstring = "";
         $kprimeresponse1 = "";
         $kprimeresponse2 = "";
         $correctanswerscounter = 0;
-        $correctanswers = array();
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->rows as $answer) {
                 // Remove outer <p> </p>.
@@ -1652,10 +1652,12 @@ class quiz_handout_report extends quiz_attempts_report {
                     $answer->optiontext);
                 $kprimeoptionscounter++;
             }
-            foreach ($questiondata->options->weights as $weight) {
-                $kprimeoptions[$correctanswerscounter]['response_1weight'] = $weight[1]->weight;
-                $kprimeoptions[$correctanswerscounter]['response_2weight'] = $weight[2]->weight;
-                $correctanswerscounter++;
+            if ($solutions) {
+                foreach ($questiondata->options->weights as $weight) {
+                    $kprimeoptions[$correctanswerscounter]['response_1weight'] = $weight[1]->weight;
+                    $kprimeoptions[$correctanswerscounter]['response_2weight'] = $weight[2]->weight;
+                    $correctanswerscounter++;
+                }
             }
         }
 
@@ -1698,16 +1700,25 @@ class quiz_handout_report extends quiz_attempts_report {
     public function processmtfquestion($questiondata, $solutions = false) {
         // Multiple True/False question type.
         global $CFG, $DB, $questiontext, $replacearray;
-        $mtfoptionnumbering = 0;
+        $mtfoptionscounter = 0;
         $mtfoptions = array();
         $mtfoptionstring = "";
         $mtfresponse1 = "";
         $mtfresponse2 = "";
+        $correctanswerscounter = 0;
         if (get_class($questiondata) == 'stdClass') {
             foreach ($questiondata->options->rows as $answer) {
                 // Remove outer <p> </p>.
-                $mtfoptions[] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/', '$1',
+                $mtfoptions[$mtfoptionscounter]['optiontext'] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/', '$1',
                     $answer->optiontext);
+                $mtfoptionscounter++;
+            }
+            if ($solutions) {
+                foreach ($questiondata->options->weights as $weight) {
+                    $mtfoptions[$correctanswerscounter]['response_1weight'] = $weight[1]->weight;
+                    $mtfoptions[$correctanswerscounter]['response_2weight'] = $weight[2]->weight;
+                    $correctanswerscounter++;
+                }
             }
         }
 
@@ -1721,14 +1732,21 @@ class quiz_handout_report extends quiz_attempts_report {
             }
         }
         foreach ($mtfoptions as $mtfoption) {
-            if ($mtfoptionnumbering == 0) {
-                $mtfoptionstring .= "<p>$mtfresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
-                    "<input type=\"checkbox\" />&#160;$mtfresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $mtfoption . "</p>\n";
-            } else {
-                $mtfoptionstring .= "<p>$mtfresponse1&#160;<input type=\"checkbox\" />&#160;&#160;" .
-                    "<input type=\"checkbox\" />&#160;$mtfresponse2&#160;&#160;&#160;&#160;&#160;&#160;" . $mtfoption . "</p>\n";
+            $mtfoptionstring .= "<p>$mtfresponse1&#160;<input type=\"checkbox\"";
+            if ($solutions) {
+                if ($mtfoption['response_1weight'] == 1) {
+                    $mtfoptionstring .= " checked=\"checked\"";
+                }
             }
-            $mtfoptionnumbering++;
+            $mtfoptionstring .= " />&#160;&#160;" .
+                "<input type=\"checkbox\"";
+            if ($solutions) {
+                if ($mtfoption['response_2weight'] == 1) {
+                    $mtfoptionstring .= " checked=\"checked\"";
+                }
+            }
+            $mtfoptionstring .= " />&#160;$mtfresponse2&#160;&#160;&#160;&#160;&#160;&#160;" .
+                $mtfoption['optiontext'] . "</p>\n";
         }
         $questiontext .= $mtfoptionstring;
     }
