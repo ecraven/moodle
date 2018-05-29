@@ -27,7 +27,6 @@ $string['pluginname'] = 'Musterlösung';
 $string['options'] = 'Auswahl';
 $string['singlesolution'] = 'Lösung';
 $string['multiplesolutions'] = 'Mehr als eine Lösung';
-$string['solutionfilename'] = 'Handout';
 $string['solutiondownload'] = 'Download doc (Word-kompatibel), jedoch ohne Bilder (in Word wieder einfügen)';
 $string['solutionfilename'] = 'Musterlösung';
 $string['xsltunavailable'] = 'You need the XSLT library installed in PHP to save this Word file';
