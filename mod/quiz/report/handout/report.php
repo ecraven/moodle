@@ -76,7 +76,7 @@ class quiz_handout_report extends quiz_attempts_report {
 
         $popup = $isteacher ? 0 : $quiz->popup; // Controls whether this is shown in a javascript-protected window.
 
-        $todisplay .= $this->writehandout($quiz, $cm, true);
+        $todisplay .= $this->writehandout($quiz, $cm, false);
 
         $hasstudents = true;
 
@@ -957,10 +957,11 @@ class quiz_handout_report extends quiz_attempts_report {
         // Calculated question type, also used for calculated simple question type.
         global $DB, $questiontext, $replacearray;
         $datasetdefs = array();
-        $size = 0; /* correct answer length */
+        $size = 0; // Correct answer length.
+        $correctanswerscounter = 0;
         $correctanswers = array();
 
-        /* Get the dataset definitions. */
+        // Get the dataset definitions.
         if (!empty($questiondata->id)) {
             $sql = "SELECT i.*
                       FROM {question_datasets} d, {question_dataset_definitions} i
@@ -1008,44 +1009,51 @@ class quiz_handout_report extends quiz_attempts_report {
         $calculatedquestionoptionsanswerscount = 0;
 
         if (get_class($questiondata) == 'stdClass') {
-            /* the answers are located differently depending on which class it is, stdClass or qtype_calculated_question */
+            // When coming from 'normal' question context.
+            // The answers are located differently depending on which class it is, stdClass or qtype_calculated_question.
             $calculatedquestionoptionsanswerscount = count($questiondata->options->answers);
         }
         if (get_class($questiondata) == 'qtype_calculated_question') {
-            /* the answers are located differently depending on which class it is, stdClass or qtype_calculated_question */
+            // The answers are located differently depending on which class it is, stdClass or qtype_calculated_question.
             $calculatedquestionoptionsanswerscount = count($questiondata->answers);
         }
         if (get_class($questiondata) == 'qtype_calculatedsimple_question') {
-            /* the answers are located differently depending on which class it is, stdClass or qtype_calculated_question */
+            // The answers are located differently depending on which class it is, stdClass or qtype_calculated_question.
             $calculatedquestionoptionsanswerscount = count($questiondata->answers);
         }
         if ($calculatedquestionoptionsanswerscount > 0) {
             if (get_class($questiondata) == 'stdClass') {
+                // When coming from 'normal' question context.
                 foreach ($questiondata->options->answers as $answer) {
                     // Answers are of class stdClass.
                     $vs = new qtype_calculated_variable_substituter(
                         $replacearray, get_string('decsep', 'langconfig'));
                     $formula = $answer->answer;
                     $correctanswer = $vs->calculate($formula);
-                    $correctanswers[] = $correctanswer;
+                    $correctanswers[$correctanswerscounter]['answer'] = $correctanswer;
+                    $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction, 0, 8) . "%";
                     // Multiple answers could be correct, set the correct answer length to the longest.
                     if (strlen((string)$correctanswer) > $size) {
                         $size = strlen((string)$correctanswer);
                     }
+                    $correctanswerscounter++;
                 }
             }
-            if (get_class($questiondata) == 'qtype_calculated_question') {
+            if ((get_class($questiondata) == 'qtype_calculated_question') OR
+                (get_class($questiondata) == 'qtype_calculatedsimple_question')) {
                 foreach ($questiondata->answers as $answer) {
                     // Answers are of class qtype_numerical_answer.
                     $vs = new qtype_calculated_variable_substituter(
                         $replacearray, get_string('decsep', 'langconfig'));
                     $formula = $answer->answer;
                     $correctanswer = $vs->calculate($formula);
-                    $correctanswers[] = $correctanswer;
+                    $correctanswers[$correctanswerscounter]['answer'] = $correctanswer;
+                    $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction, 0, 8) . "%";
                     // Multiple answers could be correct, set the correct answer length to the longest.
                     if (strlen((string)$correctanswer) > $size) {
                         $size = strlen((string)$correctanswer);
                     }
+                    $correctanswerscounter++;
                 }
             }
             // Input field should be at least size 3.
@@ -1057,11 +1065,33 @@ class quiz_handout_report extends quiz_attempts_report {
             for ($j = 1; $j <= $size; $j++) {
                 $spacesize .= "&#160;&#160;";
             }
-            $questiontext .= "<input type=\"text\"" .
-                " value=\"" . $spacesize . "\"" .
-                " size=\"" . $size . "\"" .
+            $questiontext .= "<input type=\"text\" value=\"";
+            if ($solutions) {
+                if (count($correctanswers) == 1) {
+                    // Just one solution.
+                    $questiontext .= $correctanswers[0]['answer'];
+                }
+                if (count($correctanswers) > 1) {
+                    // More than one solution.
+                    $questiontext .= $spacesize;
+                }
+            } else {
+                $questiontext .= $spacesize;
+            }
+            $questiontext .= "\" size=\"" . $size . "\"" .
                 " style=\"border: 1px dashed #000000; height: 24px;\"" .
                 "/>\n";
+            if ($solutions && (count($correctanswers) > 1)) {
+                $questiontext .= "<br />&#160;<br />" . get_string('multiplesolutions', 'quiz_solution') . ": ";
+                $firstsolutionanswer = 0;
+                foreach ($correctanswers as $solutionanswer) {
+                    if ($firstsolutionanswer > 0) {
+                        $questiontext .= " / ";
+                    }
+                    $questiontext .= $solutionanswer['answer'] . " (" . $solutionanswer['percent'] . ")";
+                    $firstsolutionanswer++;
+                }
+            }
         }
     }
 
