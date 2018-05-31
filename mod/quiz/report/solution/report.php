@@ -1164,6 +1164,7 @@ class quiz_solution_report extends quiz_attempts_report {
         }
         // Rewrite pulldown menu answer options, calculate correct data length.
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             foreach ($questiondata->options->answers as $answer) {
                 // Answers are of class stdClass.
                 $vs = new qtype_calculated_variable_substituter(
@@ -1218,6 +1219,7 @@ class quiz_solution_report extends quiz_attempts_report {
             $size = 3;
         }
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             if ($questiondata->options->single != 1) {
                 $questiontext .= get_string('pleasecheckoneormoreanswers', 'lesson') . "<br/>\n";
             }
@@ -1269,6 +1271,7 @@ class quiz_solution_report extends quiz_attempts_report {
         $correctanswerscounter = 0;
         $correctanswers = array();
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             foreach ($questiondata->options->answers as $answer) {
                 // Remove outer <p> </p>.
                 $multichoiceoptions[] = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->answer); /* remove outer <p> </p> */
@@ -1330,7 +1333,7 @@ class quiz_solution_report extends quiz_attempts_report {
         if ($solutions) {
             if (count((array)$correctanswers) > 1) {
                 // More than one solution.
-                $questiontext .= "<br />&#160;<br />" . get_string('multiplesolutions', 'quiz_solution') . ": ";
+                $questiontext .= "<p>" . get_string('multiplesolutions', 'quiz_solution') . ": ";
                 $firstsolutionanswer = 0;
                 foreach ($correctanswers as $solutionanswer) {
                     if ($firstsolutionanswer > 0) {
@@ -1339,6 +1342,7 @@ class quiz_solution_report extends quiz_attempts_report {
                     $questiontext .= $solutionanswer['answer'] . " (" . $solutionanswer['percent'] . ")";
                     $firstsolutionanswer++;
                 }
+                $questiontext .= "</p>\n";
             }
         }
     }
@@ -1353,6 +1357,7 @@ class quiz_solution_report extends quiz_attempts_report {
         // Numerical question type.
         global $CFG, $DB, $questiontext, $replacearray;
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             $numericalquestionoptionsanswerscount = count($questiondata->options->answers);
         }
         if (get_class($questiondata) == 'qtype_numerical_question') {
@@ -1361,6 +1366,7 @@ class quiz_solution_report extends quiz_attempts_report {
         if ($numericalquestionoptionsanswerscount > 0) {
             $size = 3;
             if (get_class($questiondata) == 'stdClass') {
+                // When coming from 'normal' question context.
                 foreach ($questiondata->options->answers as $answer) {
                     // Input field should be at least size 3, but only one (and the longest) in case of multiple correct
                     // responses.
@@ -1411,6 +1417,7 @@ class quiz_solution_report extends quiz_attempts_report {
         $truefalseoptions = array();
 
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             foreach ($questiondata->options->answers as $answer) {
                 if ($solutions) {
                     if ($answer->fraction > 0.0000000) {
@@ -1470,6 +1477,7 @@ class quiz_solution_report extends quiz_attempts_report {
         // Input field should be at least size 3.
         $size = 3;
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             foreach ($questiondata->options->subquestions as $answer) {
                 // Looking for the largest option.
                 if (trim($answer->questiontext) != '') {
@@ -1486,16 +1494,26 @@ class quiz_solution_report extends quiz_attempts_report {
                     // Remove outer <p> </p>.
                     $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->questiontext);
                     $questiontext .= "\n";
-                    // In the order type value size style.
                     $spacesize = "";
                     for ($j = 1; $j <= $size; $j++) {
                         $spacesize .= "&#160;";
                     }
-                    $questiontext .= "&#160;<input type=\"text\"" .
-                        " value=\"" . $spacesize . "\"" .
-                        " size=\"" . $size . "\"" .
+                    if ($solutions) {
+                        // Remove outer <p> </p>.
+                        $answeroption = preg_replace('!^<p>(.*?)</p>$!i', '$1', $answer->questiontext);
+                        $correctanswers[$answeroption] = $answer->answertext;
+                        $correctanswers = array();
+                    }
+                    // In the order type value size style.
+                    $questiontext .= "<input type=\"text\" value=\"";
+                    if ($solutions) {
+                        $questiontext .= $answer->answertext;
+                    } else {
+                        $questiontext .= $spacesize;
+                    }
+                    $questiontext .= "\" size=\"" . $size . "\"" .
                         " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                        "/>&#160;<sup>*</sup></p>\n";
+                        "/>\n";
                 }
             }
             if ($questiondata->options->shuffleanswers == 1) {
@@ -1563,6 +1581,7 @@ class quiz_solution_report extends quiz_attempts_report {
         $size = 3;
         $gapselectoptions = "";
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             $i = 1;
             foreach ($questiondata->options->answers as $answer) {
                 // Looking for the largest option.
@@ -1676,6 +1695,7 @@ class quiz_solution_report extends quiz_attempts_report {
         $kprimeresponse2 = "";
         $correctanswerscounter = 0;
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             foreach ($questiondata->options->rows as $answer) {
                 // Remove outer <p> </p>.
                 $kprimeoptions[$kprimeoptionscounter]['optiontext'] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/', '$1',
@@ -1737,6 +1757,7 @@ class quiz_solution_report extends quiz_attempts_report {
         $mtfresponse2 = "";
         $correctanswerscounter = 0;
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             foreach ($questiondata->options->rows as $answer) {
                 // Remove outer <p> </p>.
                 $mtfoptions[$mtfoptionscounter]['optiontext'] = preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/', '$1',
@@ -1799,6 +1820,7 @@ class quiz_solution_report extends quiz_attempts_report {
         // Input field should be at least size 3.
         $size = 3;
         if (get_class($questiondata) == 'stdClass') {
+            // When coming from 'normal' question context.
             $i = 1;
             foreach ($questiondata->options->answers as $answer) {
                 // Looking for the largest option.
