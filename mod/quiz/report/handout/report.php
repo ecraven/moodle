@@ -1354,8 +1354,11 @@ class quiz_handout_report extends quiz_attempts_report {
      * @param bool $solutions whether to show the solutions.
      */
     public function processnumericalquestion($questiondata, $solutions = false) {
+
         // Numerical question type.
         global $CFG, $DB, $questiontext, $replacearray;
+        $correctanswerscounter = 0;
+        $correctanswers = array();
         if (get_class($questiondata) == 'stdClass') {
             // When coming from 'normal' question context.
             $numericalquestionoptionsanswerscount = count($questiondata->options->answers);
@@ -1368,15 +1371,24 @@ class quiz_handout_report extends quiz_attempts_report {
             if (get_class($questiondata) == 'stdClass') {
                 // When coming from 'normal' question context.
                 foreach ($questiondata->options->answers as $answer) {
+                    if ($solutions) {
+                        $correctanswers[$correctanswerscounter]['answer'] = $answer->answer;
+                        $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction, 0, 8) . "%";
+                    }
                     // Input field should be at least size 3, but only one (and the longest) in case of multiple correct
                     // responses.
                     if ((strlen((string)$answer->answer)) > $size) {
                         $size = strlen((string)$answer->answer);
                     }
+                    $correctanswerscounter ++;
                 }
             }
             if (get_class($questiondata) == 'qtype_numerical_question') {
                 foreach ($questiondata->answers as $answer) {
+                    if ($solutions) {
+                        $correctanswers[$correctanswerscounter]['answer'] = $answer->answer;
+                        $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction, 0, 8) . "%";
+                    }
                     // Input field should be at least size 3, but only one (and the longest) in case of multiple correct
                     // responses.
                     if ((strlen((string)$answer->answer)) > $size) {
@@ -1384,19 +1396,42 @@ class quiz_handout_report extends quiz_attempts_report {
                     }
                 }
             }
-            $questiontext = "<p>" . $questiontext;
-            // In the order type value size style.
-            $spacesize = "";
-            for ($j = 1; $j <= $size; $j++) {
-                $spacesize .= "&#160;&#160;";
-            }
-            $questiontext .= "</p>\n<p>" .
-                "<input type=\"text\"" .
-                " value=\"" . $spacesize . "\"" .
-                " size=\"" . $size . "\"" .
-                " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                "/></p>\n";
         }
+
+        $questiontext = "<p>" . $questiontext . "</p>\n";
+        // In the order type value size style.
+        $spacesize = "";
+        for ($j = 1; $j <= $size; $j++) {
+            $spacesize .= "&#160;&#160;";
+        }
+        $questiontext .= "<input type=\"text\" value=\"";
+        if ($solutions) {
+            if (count($correctanswers) == 1) {
+                // Just one solution.
+                $questiontext .= $correctanswers[0]['answer'];
+            }
+            if (count($correctanswers) > 1) {
+                // More than one solution.
+                $questiontext .= $spacesize;
+            }
+        } else {
+            $questiontext .= $spacesize;
+        }
+        $questiontext .= "\" size=\"" . $size . "\"" .
+            " style=\"border: 1px dashed #000000; height: 24px;\"" .
+            "/>\n";
+        if ($solutions && (count($correctanswers) > 1)) {
+            $questiontext .= "<p>" . get_string('multiplesolutions', 'quiz_handout') . ": ";
+            $firstsolutionanswer = 0;
+            foreach ($correctanswers as $solutionanswer) {
+                if ($firstsolutionanswer > 0) {
+                    $questiontext .= " / ";
+                }
+                $questiontext .= $solutionanswer['answer'] . " (" . $solutionanswer['percent'] . ")";
+                $firstsolutionanswer++;
+            }
+        }
+        $questiontext .= "</p>\n";
     }
 
     /**
