@@ -1249,9 +1249,23 @@ class quiz_handout_report extends quiz_attempts_report {
         for ($j = 1; $j <= 80; $j++) {
             $spacesize .= "&#160;";
         }
-        $questiontext .= "<input type=\"text\"" .
-            " value=\"" . $spacesize . "\"" .
-            " size=\"80\"" .
+        $questiontext .= "<input type=\"text\" value=\"";
+        if ($solutions) {
+            if (get_class($questiondata) == 'stdClass') {
+                // When coming from 'normal' question context.
+                foreach ($questiondata->options->answers as $answer) {
+                    $questiontext .= $answer->answer . " ";
+                }
+            }
+            if (get_class($questiondata) == 'qtype_shortanswer_question') {
+                foreach ($questiondata->answers as $answer) {
+                    $questiontext .= $answer->answer . " ";
+                }
+            }
+        } else {
+            $questiontext .= $spacesize;
+        }
+        $questiontext .= "\" size=\"80\"" .
             " style=\"border: 1px dashed #000000; height: 24px;\"" .
             "/>\n";
     }
