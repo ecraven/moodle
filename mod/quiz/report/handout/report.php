@@ -1862,12 +1862,13 @@ class quiz_handout_report extends quiz_attempts_report {
      */
     public function processddwtosquestion($questiondata, $solutions = false) {
         // Drag and drop into text question type.
-        global $questiontext, $replacearray, $annotation, $annotationnumbering;
-        $ddwtosoptionnumbering = 0;
-        $ddwtosoptionstring = "";
-        $ddwtosoptions = array();
+
+        // Cloze has questions iterated 1, 2, 3, 4 and they have each the options individually. Repeating.
+        // Missing words has answers and feedback does deal with feedback.
+        global $questiontext, $annotationnumbering, $replacearray, $annotation, $annotationsarray, $fieldsarray;
         // Input field should be at least size 3.
         $size = 3;
+        $ddwtosoptions = "";
         if (get_class($questiondata) == 'stdClass') {
             // When coming from 'normal' question context.
             $i = 1;
@@ -1880,22 +1881,40 @@ class quiz_handout_report extends quiz_attempts_report {
                     }
                 }
             }
+            $ddwtosoptionoptions = array();
+            $ddwtosoptionsarray = array();
+
             foreach ($questiondata->options->answers as $answer) {
-                $ddwtosoptions[] = $answer->answer;
+                // Build an array attributing the gaps to the options.
+                $ddwtosoptionsarray[] = array((unserialize($answer->feedback)->draggroup) => $i);
+                // Build an array with the options.
+                if (!isset($ddwtosoptionoptions[(unserialize($answer->feedback)->draggroup)])) {
+                    // The first entry.
+                    $ddwtosoptionoptions[(unserialize($answer->feedback)->draggroup)] = $answer->answer;
+                } else {
+                    $ddwtosoptionoptions[(unserialize($answer->feedback)->draggroup)] =
+                        $ddwtosoptionoptions[(unserialize($answer->feedback)->draggroup)] . " || " . $answer->answer;
+                }
+
+                if ($ddwtosoptions === '') {
+                    // The first entry.
+                    $ddwtosoptions .= $answer->answer;
+                } else {
+                    $ddwtosoptions .= " || " . $answer->answer;
+                }
                 if (trim($answer->answer) != '') {
-                    $questiontext .= "<p>";
-                    // Remove outer <p> </p>.
-                    $questiontext .= preg_replace('/<p[^>]*>(.*)<\/p[^>]*>/', '$1',
-                        $answer->answer);
-                    $questiontext .= "</p>\n";
                     if ($solutions) {
                         // Solution.
                         // In the order type value size style.
-                        $replacearray["#$i"] = "<input type=\"text\"" .
+                        $fieldsarray[$i] = "<input type=\"text\"" .
+                            " value=\"" . $answer->answer . "\"" .
+                            " size=\"" . $size . "\"" .
+                            " style=\"border: 1px dashed #000000; height: 24px;\"/>";
+                        $replacearray["$i"] = "<input type=\"text\"" .
                             " value=\"" . $answer->answer . "\"" .
                             " size=\"" . $size . "\"" .
                             " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                            "/>&#160;<sup>*" . $i . "</sup>\n";
+                            "/>&#160;<sup>*" . (unserialize($answer->feedback)->draggroup) . "</sup>\n";
                     } else {
                         // Handout.
                         // In the order type value size style.
@@ -1903,61 +1922,53 @@ class quiz_handout_report extends quiz_attempts_report {
                         for ($j = 1; $j <= $size; $j++) {
                             $spacesize .= "&#160;&#160;";
                         }
+                        $fieldsarray[$i] = "<input type=\"text\" size=\"" . $size .
+                            "\" style=\"border: 1px dashed #000000; height: 24px;\" value=\"\"/>";
                         $replacearray["$i"] = "<input type=\"text\"" .
                             " value=\"" . $spacesize . "\"" .
                             " size=\"" . $size . "\"" .
                             " style=\"border: 1px dashed #000000; height: 24px;\"" .
-                            "/>&#160;<sup>*" . $annotationnumbering . "</sup>\n";
+                            "/>&#160;<sup>*" . (unserialize($answer->feedback)->draggroup) . "</sup>\n";
                     }
                 }
-
                 $i++;
                 // Next answer.
             }
-            if ($questiondata->options->shuffleanswers == 1) {
-                // Shuffle the array.
-                shuffle($ddwtosoptions);
-            }
-        }
-        if (get_class($questiondata) == 'qtype_ddwtos_question') {
-            foreach ($questiondata->choices as $choice) {
-                // Looking for the largest option.
-                if (trim($choice) != '') {
-                    if (strlen((string)$choice) > $size) {
-                        $size = strlen((string)$choice);
+
+            foreach ($ddwtosoptionoptions as $option => $optiontext) {
+                // Gapselectoptionsoptions in the form {"1":"cat || mat","2":"once || many"}.
+                foreach ($ddwtosoptionsarray as $gapoption => $gap) {
+                    // Gapoptionsarray in the form [{"1":1},{"1":2},{"2":3},{"2":4}].
+                    if (array_key_exists($optiontext,
+                        $annotationsarray)) {
+                        $annotationsarray[$optiontext][] = (int)$gap;
+                    } else {
+                        // Only if it doesn't already exist.
+                        $annotationsarray[$optiontext] = array((int)$gap);
                     }
                 }
             }
-            foreach ($questiondata->stems as $question) {
-                if (trim($question) != '') {
-                    $questiontext .= "<p>";
-                    // Remove outer <p> </p>.
-                    $questiontext .= preg_replace('!^<p>(.*?)</p>$!i', '$1', $question);
-                    $questiontext .= "\n";
-                    $questiontext .= "&#160;<input type=\"text\" size=\"" . $size .
-                        "\" style=\"border: 1px dashed #000000; height: 24px;\"/>&#160;<sup>*</sup></p>\n";
-                }
-            }
-            foreach ($questiondata->choices as $choice) {
-                $ddwtosoptions[] = $choice;
-            }
-            if ($questiondata->shufflestems = 1) {
-                // Shuffle the array.
-                shuffle($ddwtosoptions);
-            }
         }
 
-        foreach ($ddwtosoptions as $ddwtosoption) {
-            if ($ddwtosoptionnumbering == 0) {
-                $ddwtosoptionstring .= $ddwtosoption;
-            } else {
-                $ddwtosoptionstring .= " || " . $ddwtosoption;
+        // Routine to sort out multiple identical option fields.
+        $singleannotationcounter = 1;
+        $annotation = "";
+
+        foreach ($annotationsarray as $uniqueannotation => $annotationvalues) {
+            foreach ($annotationvalues as $annotationfield => $annotationgap) {
+                $replacearray["#" . $annotationgap] = $fieldsarray[$annotationgap] . "&#160;<sup>*" . $singleannotationcounter .
+                    "</sup>\n";
             }
-            $ddwtosoptionnumbering++;
+            // Shuffle $uniqueannotation.
+            $uniqueannotationelements = explode(' || ', $uniqueannotation);
+            shuffle($uniqueannotationelements);
+            $annotation .= "<sup>*" . $singleannotationcounter . "</sup>&#160;" . get_string('options', 'quiz_handout') .
+                ": " . implode(' || ', $uniqueannotationelements) . "<br />\n";
+            $singleannotationcounter++;
         }
-        $annotation = "<sup>*</sup>&#160;" . get_string('options', 'quiz_handout') . ": " .
-            $ddwtosoptionstring . "\n";
+        $annotation = "<p>" . $annotation . "</p>\n";
     }
+
 
     /**
      * This method needs to be called before the ->excludedqtypes and
