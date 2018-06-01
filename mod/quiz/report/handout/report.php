@@ -1029,7 +1029,11 @@ class quiz_handout_report extends quiz_attempts_report {
                     $vs = new qtype_calculated_variable_substituter(
                         $replacearray, get_string('decsep', 'langconfig'));
                     $formula = $answer->answer;
-                    $correctanswer = $vs->calculate($formula);
+                    if ($formula === "*") {
+                        $correctanswer = "*";
+                    } else {
+                        $correctanswer = $vs->calculate($formula);
+                    }
                     $correctanswers[$correctanswerscounter]['answer'] = $correctanswer;
                     $correctanswers[$correctanswerscounter]['percent'] = substr((string)100 * $answer->fraction, 0, 8) . "%";
                     // Multiple answers could be correct, set the correct answer length to the longest.
@@ -1082,7 +1086,7 @@ class quiz_handout_report extends quiz_attempts_report {
                 " style=\"border: 1px dashed #000000; height: 24px;\"" .
                 "/>\n";
             if ($solutions && (count($correctanswers) > 1)) {
-                $questiontext .= "<br />&#160;<br />" . get_string('multiplesolutions', 'quiz_handout') . ": ";
+                $questiontext .= "<p>" . get_string('multiplesolutions', 'quiz_handout') . ": ";
                 $firstsolutionanswer = 0;
                 foreach ($correctanswers as $solutionanswer) {
                     if ($firstsolutionanswer > 0) {
@@ -1091,14 +1095,15 @@ class quiz_handout_report extends quiz_attempts_report {
                     $questiontext .= $solutionanswer['answer'] . " (" . $solutionanswer['percent'] . ")";
                     $firstsolutionanswer++;
                 }
+                $questiontext .= "</p>\n";
             }
         }
     }
 
     /**
-     * Process the multichoice question type.
+     * Process the calculated multichoice question type.
      *
-     * @param object $questiondata the data defining a multichoice question.
+     * @param object $questiondata the data defining a calculated multichoice question.
      * @param bool $solutions whether to show the solutions.
      * @throws coding_exception
      * @throws dml_exception
@@ -1169,8 +1174,8 @@ class quiz_handout_report extends quiz_attempts_report {
                 // Answers are of class stdClass.
                 $vs = new qtype_calculated_variable_substituter(
                     $replacearray, get_string('decsep', 'langconfig'));
-                // Throw away {= and }.
-                $strippedformula = substr($answer->answer, 2, strlen($answer->answer) - 3);
+                // Throw away "{= and }".
+                $strippedformula = substr($answer->answer, 3, strlen($answer->answer) - 4);
                 $option = $vs->calculate($strippedformula);
                 if ($answer->fraction > 0.0000000) {
                     $correctanswers[] = $option;
