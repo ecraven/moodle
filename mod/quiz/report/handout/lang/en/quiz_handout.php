@@ -77,3 +77,6 @@ $string['cannotopentempfile'] = 'Cannot open temporary file <b>{$a}</b>';
 $string['transformationfailed'] = 'XSLT transformation failed (<b>{$a}</b>)';
 $string['cannotwritetotempfile'] = 'Cannot write to temporary file <b>{$a}</b>';
 $string['qtypenotdisplayable'] = 'A question of type {$a} cannot be printed out reasonably.';
+
+// PRIVACY.
+$string['privacy:metadata'] = 'The quiz solution plugin does not store any personal data about any user.';

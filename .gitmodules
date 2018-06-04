@@ -4,12 +4,6 @@
 [submodule "question/type/kprime"]
 	path = question/type/kprime
 	url = https://github.com/ethz-let/moodle-qtype_kprime
-[submodule "question/type/mtf"]
-	path = question/type/mtf
-	url = https://github.com/ethz-let/qtype_mtf
-[submodule "filter/multilang2"]
-	path = filter/multilang2
-	url = https://github.com/iarenaza/moodle-filter_multilang2
 [submodule "local/codechecker"]
 	path = local/codechecker
 	url = https://github.com/moodlehq/moodle-local_codechecker
