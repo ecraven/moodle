@@ -17,6 +17,12 @@ Feature: Editing a grade item
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
     And I log in as "admin"
+# Enable autolinking filter
+    And I navigate to "Plugins > Filters > Manage filters" in site administration
+    And I set the field with xpath "//form[@id='activemultilang']//select[@name='newstate']" to "On"
+    And I wait until the page is ready
+    And I set the field with xpath "//form[@id='applytomultilang']//select[@name='stringstoo']" to "Content and headings"
+    And I wait until the page is ready
     And I navigate to "Scales" node in "Site administration > Grades"
     And I press "Add a new scale"
     And I set the following fields to these values:
@@ -36,22 +42,22 @@ Feature: Editing a grade item
     And I navigate to "Setup > Gradebook setup" in the course gradebook
     And I press "Add category"
     And I set the following fields to these values:
-      | Category name | Cat 1 |
+      | Category name | <span lang="en" class="multilang">EN</span><span lang="fr" class="multilang">FR</span> Cat 1 |
       | Aggregation   | Highest grade |
     And I press "Save changes"
     And I press "Add grade item"
     And I set the following fields to these values:
-      | Item name | Item 1 |
-      | Grade category | Cat 1 |
+      | Item name | <span lang="en" class="multilang">EN</span><span lang="fr" class="multilang">FR</span> Item 1 |
+      | Grade category | EN Cat 1 |
     And I press "Save changes"
     And I press "Add grade item"
     And I set the following fields to these values:
-      | Item name | Item 2 |
-      | Grade category | Cat 1 |
+      | Item name | <span lang="en" class="multilang">EN</span><span lang="fr" class="multilang">FR</span> Item 2 |
+      | Grade category | EN Cat 1 |
     And I press "Save changes"
 
   Scenario: Being able to change the grade type, scale and maximum grade for a grade category when there are no overridden grades
-    Given I click on "Edit" "link" in the "Cat 1" "table_row"
+    Given I click on "Edit" "link" in the "EN Cat 1" "table_row"
     When I click on "Edit settings" "link" in the "Cat 1" "table_row"
     Then I should not see "This category has associated grade items which have been overridden. Therefore some grades have already been awarded"
     And I set the field "Grade type" to "Scale"
@@ -70,7 +76,7 @@ Feature: Editing a grade item
   Scenario: Attempting to change a category item's grade type when overridden grades already exist
     Given I navigate to "View > Grader report" in the course gradebook
     And I turn editing mode on
-    And I give the grade "20.00" to the user "Student 1" for the grade item "Cat 1 total"
+    And I give the grade "20.00" to the user "Student 1" for the grade item "ENFR Cat 1 total"
     And I press "Save changes"
     And I navigate to "Setup > Gradebook setup" in the course gradebook
     And I click on "Edit" "link" in the "Cat 1" "table_row"

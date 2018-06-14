@@ -44,6 +44,12 @@ class core_grade_lib_test extends advanced_testcase {
     public function test_can_output_item() {
         $this->resetAfterTest();
 
+        // Enable multilang filter to content and heading.
+        filter_set_global_state('multilang', TEXTFILTER_ON);
+        filter_set_applies_to_strings('multilang', 1);
+        $filtermanager = filter_manager::instance();
+        $filtermanager->reset_caches();
+
         $generator = $this->getDataGenerator();
 
         // Course level grade category.
@@ -65,7 +71,7 @@ class core_grade_lib_test extends advanced_testcase {
         }
 
         // Add a grade category with grade type = None.
-        $nototalcategory = 'No total category';
+        $nototalcategory = '<span lang="de" class="multilang">DE</span> <span lang="en" class="multilang">EN</span> No total category';
         $nototalparams = [
             'courseid' => $course->id,
             'fullname' => $nototalcategory,

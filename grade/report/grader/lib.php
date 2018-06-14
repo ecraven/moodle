@@ -915,7 +915,8 @@ class grade_report_grader extends grade_report {
                                 'itemid' => $element['object']->id));
                             $singleview = $OUTPUT->action_icon(
                                 $url,
-                                new pix_icon('t/editstring', get_string('singleview', 'grades', $element['object']->get_name()))
+                                new pix_icon('t/editstring', get_string('singleview', 'grades',
+                                    format_string($element['object']->get_name(), false, array("context" => $this->context))))
                             );
                         }
                     }
@@ -1646,7 +1647,7 @@ class grade_report_grader extends grade_report {
             }
         }
 
-        $name = $element['object']->get_name();
+        $name = format_string($element['object']->get_name(), false, array("context" => $this->context));
         $courseheaderid = 'courseheader_' . clean_param($name, PARAM_ALPHANUMEXT);
         $courseheader = html_writer::tag('span', $name, array('id' => $courseheaderid,
                 'title' => $name, 'class' => 'gradeitemheader'));

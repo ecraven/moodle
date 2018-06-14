@@ -1559,7 +1559,7 @@ class grade_structure {
             $header .= $this->get_element_icon($element, $spacerifnone);
         }
 
-        $title = $element['object']->get_name($fulltotal);
+        $title = format_string($element['object']->get_name($fulltotal), false, array("context" => $this->context));
         $header .= $title;
 
         if ($element['type'] != 'item' and $element['type'] != 'categoryitem' and
@@ -1758,12 +1758,12 @@ class grade_structure {
             return $strparams;
         }
 
-        $strparams->itemname = html_to_text($element['object']->get_name());
+        $strparams->itemname = html_to_text(format_string($element['object']->get_name(), false, array("context" => $this->context)));
 
         // If element name is categorytotal, get the name of the parent category
         if ($strparams->itemname == get_string('categorytotal', 'grades')) {
             $parent = $element['object']->get_parent_category();
-            $strparams->category = $parent->get_name() . ' ';
+            $strparams->category = format_string($parent->get_name(), false, array("context" => $this->context)) . ' ';
         } else {
             $strparams->category = '';
         }
@@ -2653,7 +2653,7 @@ class grade_tree extends grade_structure {
 
 
         if (strpos($root['object']->table, 'grade_categories') !== false) {
-            $name = $root['object']->fullname;
+            $name = format_string($root['object']->fullname, false, array("context" => $this->context));
             if ($name == '?') {
                 $name = $root['object']->get_name();
             }
@@ -3270,12 +3270,13 @@ abstract class grade_helper {
                 $obj = new stdClass();
                 $obj->customid  = $field->id;
                 $obj->shortname = $field->shortname;
-                $obj->fullname  = format_string($field->name);
+                $obj->fullname  = $field->name;
                 $obj->datatype  = $field->datatype;
                 $obj->default   = $field->defaultdata;
                 $fields[] = $obj;
             }
         }
+        echo "\n\n\n\n\n\n\n" . json_encode($fields) . "\n\n\n\n\n\n\n";
 
         return $fields;
     }

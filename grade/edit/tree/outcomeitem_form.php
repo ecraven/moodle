@@ -102,7 +102,7 @@ class edit_outcomeitem_form extends moodleform {
         $categories = grade_category::fetch_all(array('courseid'=>$COURSE->id));
         foreach ($categories as $cat) {
             $cat->apply_forced_settings();
-            $options[$cat->id] = $cat->get_name();
+            $options[$cat->id] = format_string($cat->get_name(), true, array("context" => context_course::instance($COURSE->id)));
             if ($cat->is_course_category()) {
                 $default = $cat->id;
             }

@@ -26,7 +26,8 @@ Feature: Glossary entries can be organised in categories
 # Log in as admin and enable autolinking filter
     And I log in as "admin"
     And I navigate to "Plugins > Filters > Manage filters" in site administration
-    And I click on "On" "option" in the "Glossary auto-linking" "table_row"
+    And I set the field "newstate" to "On" in the "Multi-Language Content" "table_row"
+    And I set the field "stringstoo" to "Content and headings" in the "Multi-Language Content" "table_row"
     And I log out
 # Log in as a teacher and make sure nothing is yet autolinked
     And I log in as "teacher1"

@@ -158,14 +158,14 @@ die();
  * @return string
  */
 function get_grade_tree(&$gtree, $element, $current_itemid=null, $errors=null) {
-    global $CFG;
+    global $CFG, $context;
 
     $object     = $element['object'];
     $eid        = $element['eid'];
     $type       = $element['type'];
     $grade_item = $object->get_grade_item();
 
-    $name = $object->get_name();
+    $name = format_string($object->get_name(), false, array("context" => $context));
     $return_string = '';
 
     //TODO: improve outcome visualisation

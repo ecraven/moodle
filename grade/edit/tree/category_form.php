@@ -254,7 +254,7 @@ class edit_category_form extends moodleform {
 
         foreach ($categories as $cat) {
             $cat->apply_forced_settings();
-            $options[$cat->id] = $cat->get_name();
+            $options[$cat->id] = format_string($cat->get_name(), true, array("context" => context_course::instance($COURSE->id)));
             if ($cat->is_course_category()) {
                 $default = $cat->id;
             }

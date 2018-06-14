@@ -916,7 +916,7 @@ function grade_get_categories_menu($courseid, $includenew=false) {
     }
     $cats = array();
     foreach ($categories as $category) {
-        $cats[$category->id] = $category->get_name();
+        $cats[$category->id] = format_string($category->get_name(), false, array("context" => context_course::instance($courseid)));
     }
     core_collator::asort($cats);
 
