@@ -74,8 +74,14 @@ class qtype_essay_renderer extends qtype_renderer {
         $result .= html_writer::start_tag('div', array('class' => 'ablock'));
         $result .= html_writer::tag('div', $answer, array('class' => 'answer'));
         if ($question->responselimitpolicy > 0) {
-            $result .= html_writer::tag('div', '', array('class' => 'wordcount',
-                'name' => $qa->get_qt_field_name('answer') . 'wordcount'));
+            $result .= html_writer::start_tag('div', array('class' => 'wordcount',
+                       'name' => 'wordcount'));
+            $result .= get_string('characters', 'qtype_essay') . ': ' . count_letters($question->questiontext)
+                    . ' / ' . $question->charlimit;
+            $result .= ', ';
+            $result .= get_string('words', 'qtype_essay') . ': ' . count_words($question->questiontext)
+                    . ' / ' . $question->wordlimit;
+            $result .= html_writer::end_tag('div');
         }
 
         $result .= html_writer::tag('div', $files, array('class' => 'attachments'));
@@ -241,9 +247,8 @@ class qtype_essay_format_editor_renderer extends plugin_renderer_base {
     }
 
     public function response_area_read_only($name, $qa, $step, $lines, $context) {
-        $countarea = $this->get_count_area_read_only($qa);
         return html_writer::tag('div', $this->prepare_response($name, $qa, $step, $context),
-                array('class' => $this->class_name() . ' qtype_essay_response readonly')) . $countarea;
+                array('class' => $this->class_name() . ' qtype_essay_response readonly'));
     }
 
     public function response_area_input($name, $qa, $step, $lines, $context) {
@@ -485,8 +490,7 @@ class qtype_essay_format_plain_renderer extends plugin_renderer_base {
     }
 
     public function response_area_read_only($name, $qa, $step, $lines, $context) {
-        $countarea = get_count_area_read_only($qa);
-        return $this->textarea($step->get_qt_var($name), $lines, array('readonly' => 'readonly')) . $countarea;
+        return $this->textarea($step->get_qt_var($name), $lines, array('readonly' => 'readonly'));
     }
 
     public function response_area_input($name, $qa, $step, $lines, $context) {
