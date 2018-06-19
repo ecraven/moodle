@@ -76,10 +76,10 @@ class qtype_essay_renderer extends qtype_renderer {
         if ($question->responselimitpolicy > 0) {
             $result .= html_writer::start_tag('div', array('class' => 'wordcount',
                        'name' => 'wordcount'));
-            $result .= get_string('characters', 'qtype_essay') . ': ' . count_letters($question->questiontext)
+            $result .= get_string('characters', 'qtype_essay') . ': ' . count_letters($answer)
                     . ' / ' . $question->charlimit;
             $result .= ', ';
-            $result .= get_string('words', 'qtype_essay') . ': ' . count_words($question->questiontext)
+            $result .= get_string('words', 'qtype_essay') . ': ' . count_words($answer)
                     . ' / ' . $question->wordlimit;
             $result .= html_writer::end_tag('div');
         }
