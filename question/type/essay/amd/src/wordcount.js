@@ -21,20 +21,43 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define([
-        'jquery',
-        'core/str',
-        'qtype_essay/wordcount'
-    ],
-    function(
-        $,
-        Str
-    ) {
+    'jquery',
+    'core/str',
+    'qtype_essay/wordcount'
+],
+       function(
+           $,
+           Str
+       ) {
 
-        return {
-            init: function($params) {
-                var count = M.util.get_string('words', 'qtype_essay') + ': 0 / ' + $params.wordlimit + '<br />' +
-                    M.util.get_string('characters', 'qtype_essay') + ': 0 / ' + $params.charlimit;
-                $('[name="' + $params.editorname + 'wordcount"]').first().html(count);
-            }
-        };
-    });
+           return {
+               ctx: {},
+               wc_done: function(transactionid, response) {
+                   var jsondata = Y.JSON.parse(response.responseText);
+                   self = this;
+                   $.each(jsondata,function(key,value) {
+                       words = value.words;
+                       characters = value.characters;
+                       self.set_wordcount(key, characters, words);
+                   });
+                   this.in_flight = false;
+               },
+               wc_failed: function() {
+                   this.in_flight = false;
+                   alert("failed");
+               },
+               set_wordcount: function(key, chars, words) {
+                   var count = key + ': ' + M.util.get_string('words', 'qtype_essay') + ': ' + words + ' / ' + this.ctx[key].wordlimit + '<br />' +
+                       M.util.get_string('characters', 'qtype_essay') + ': ' + chars + ' / ' + this.ctx[key].charlimit;
+                   $(document.getElementById(key + '_wordcount')).html(count);
+               },
+               update_wordcount: function() {
+                   this.in_flight = Y.io("/essay/question/type/essay/wc.ajax.php", {form: document.getElementById('responseform'), method: "POST", on: { success: this.wc_done, failure: this.wc_failed}, context: this});
+               },
+               init: function($params) {
+                   this.ctx[$params.editorname] = $params;
+                   if(!this.in_flight)
+                       this.update_wordcount();
+               }
+           };
+       });

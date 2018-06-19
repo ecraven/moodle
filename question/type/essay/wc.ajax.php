@@ -14,13 +14,11 @@ function endsWith($haystack, $needle) {
     // search forward starting from end minus needle length characters
     return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== false);
 }
-echo "[";
+$res = array();
 foreach ($_POST as $key => $value) {
     if(startsWith($key, "q")
        && endsWith($key, "_answer")) {
-        echo "\"$key\": ";
-        echo count_letters($value);
-        echo ",";
+        $res[$key] = array("words" => count_words($value), "characters" => count_letters($value));
     }
 }
-echo "]";
+echo json_encode($res);

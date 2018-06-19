@@ -75,7 +75,8 @@ class qtype_essay_renderer extends qtype_renderer {
         $result .= html_writer::tag('div', $answer, array('class' => 'answer'));
         if ($question->responselimitpolicy > 0) {
             $result .= html_writer::start_tag('div', array('class' => 'wordcount',
-                       'name' => 'wordcount'));
+                                                           'name' => 'wordcount',
+                                                           'id' => $qa->get_qt_field_name('answer') . "_wordcount"));
             $result .= get_string('characters', 'qtype_essay') . ': ' . count_letters($answer)
                     . ' / ' . $question->charlimit;
             $result .= ', ';
