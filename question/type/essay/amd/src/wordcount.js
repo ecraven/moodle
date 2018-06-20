@@ -50,11 +50,15 @@ define([
                 */
                TINYMCE_DETECTION_DELAY:  500,
 
+               VALUE_CHANGE_ELEMENTS: 'input, textarea, [contenteditable="true"]',
+               CHANGE_ELEMENTS:       'input, select',
+
                ctx: {},
                lastTimeout: null,
                wc_done: function(transactionid, response) {
                    var jsondata = Y.JSON.parse(response.responseText);
                    self = this;
+                   console.log('ajax arrived');
                    for (var key in jsondata) {
                        self.set_wordcount_html(key, jsondata[key]);
                    }
@@ -82,17 +86,20 @@ define([
                        window.clearTimeout(this.lastTimeout);
                    }
                    var mythis = this;
+                   console.log('setTimeout', Math.random());
                    this.lastTimeout = setTimeout(function() {
                        if (mythis.in_flight) {
-                           mythis.in_flight.cancel();
+                           console.log('event should be removed');
+//                           mythis.in_flight.abort();
                        }
 //                       if(!mythis.in_flight) {
+                       console.log('ajax sent');
                            mythis.in_flight = Y.io(M.cfg.wwwroot + "/question/type/essay/wc.ajax.php", {
                                form: document.getElementById('responseform'),
                                method: "POST",
                                on: { success: mythis.wc_done, failure: mythis.wc_failed}, context: mythis});
                       // }
-                   }, 1000);
+                   }, 500);
                },
                init_tinymce: function(repeatcount) {
                    if (typeof window.tinyMCE === 'undefined') {
@@ -118,7 +125,8 @@ define([
                    this.ctx[$params.editorname] = $params;
                    this.lastTimeout = null;
                        // This is for Atto and clear Textarea!
-                   Y.one('#responseform').delegate('change', this.update_wordcount, 'textarea', this);
+                   Y.one('#responseform').delegate('valuechange', this.update_wordcount, this.VALUE_CHANGE_ELEMENTS, this);
+                   Y.one('#responseform').delegate('change', this.update_wordcount, this.CHANGE_ELEMENTS, this);
                    // This is for TinyMCE only!
                    this.init_tinymce();
                    this.update_wordcount();
