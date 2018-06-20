@@ -29,8 +29,27 @@ define([
            $,
            Str
        ) {
-
+           M.mod_quiz.wordcount = {};
            return {
+               /**
+                * The number of times to try redetecting TinyMCE.
+                *
+                * @property TINYMCE_DETECTION_REPEATS
+                * @type Number
+                * @default 20
+                * @private
+                */
+               TINYMCE_DETECTION_REPEATS: 20,
+               /**
+                * The amount of time (in milliseconds) to wait between TinyMCE detections.
+                *
+                * @property TINYMCE_DETECTION_DELAY
+                * @type Number
+                * @default 500
+                * @private
+                */
+               TINYMCE_DETECTION_DELAY:  500,
+
                ctx: {},
                wc_done: function(transactionid, response) {
                    var jsondata = Y.JSON.parse(response.responseText);
@@ -52,12 +71,38 @@ define([
                    $(document.getElementById(key + '_wordcount')).html(count);
                },
                update_wordcount: function() {
-                   this.in_flight = Y.io(M.cfg.wwwroot + "/question/type/essay/wc.ajax.php", {form: document.getElementById('responseform'), method: "POST", on: { success: this.wc_done, failure: this.wc_failed}, context: this});
+                   if(!this.in_flight)
+                       this.in_flight = Y.io(M.cfg.wwwroot + "/question/type/essay/wc.ajax.php", {form: document.getElementById('responseform'), method: "POST", on: { success: this.wc_done, failure: this.wc_failed}, context: this});
+               },
+               init_tinymce: function(repeatcount) {
+                   if (typeof window.tinyMCE === 'undefined') {
+                       if (repeatcount > 0) {
+                           console.log('delaying ' + repeatcount);
+                           Y.later(this.TINYMCE_DETECTION_DELAY, this, this.init_tinymce, [repeatcount - 1]);
+                       } else {
+                           console.log('Gave up looking for TinyMCE.');
+                       }
+                       return;
+                   }
+                   window.tinyMCE.onAddEditor.add(Y.bind(this.init_tinymce_editor, this));
+               },
+
+               init_tinymce_editor: function(e, editor) {
+                   console.log('editor added ' + editor);
+                   editor.onChange.add(this.update_wordcount);
+                   editor.onRedo.add(this.update_wordcount);
+                   editor.onUndo.add(this.update_wordcount);
+                   editor.onKeyDown.add(this.update_wordcount);
                },
                init: function($params) {
                    this.ctx[$params.editorname] = $params;
-                   if(!this.in_flight)
-                       this.update_wordcount();
+                   var self = this;
+                   M.mod_quiz.wordcount.update = function() {
+                       self.update_wordcount();
+                   };
+                   M.mod_quiz.autosave.form.on('change', this.update_wordcount, this);
+                   this.init_tinymce();
+                   this.update_wordcount();
                }
            };
        });
