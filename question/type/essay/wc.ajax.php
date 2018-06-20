@@ -5,19 +5,9 @@ require_once(__DIR__ . '/../../../config.php');
 
 require_sesskey();
 
-function startsWith($haystack, $needle) {
-    // search backwards starting from haystack length characters from the end
-    return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
-}
-
-function endsWith($haystack, $needle) {
-    // search forward starting from end minus needle length characters
-    return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== false);
-}
 $res = array();
 foreach ($_POST as $key => $value) {
-    if(startsWith($key, "q")
-       && endsWith($key, "_answer")) {
+    if (!empty(preg_grep('/q.*_answer/', array($key)))) {
         $res[$key] = array("words" => count_words($value), "characters" => count_letters($value));
     }
 }
