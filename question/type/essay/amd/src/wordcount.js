@@ -125,8 +125,12 @@ define([
                    this.ctx[$params.editorname] = $params;
                    this.lastTimeout = null;
                        // This is for Atto and clear Textarea!
-                   Y.one('#responseform').delegate('valuechange', this.update_wordcount, this.VALUE_CHANGE_ELEMENTS, this);
-                   Y.one('#responseform').delegate('change', this.update_wordcount, this.CHANGE_ELEMENTS, this);
+
+                   // This is for Atto and clear Textarea!
+                    var mythis = this;
+                   $('#responseform').find(this.VALUE_CHANGE_ELEMENTS).on('change', function() {mythis.update_wordcount()});
+//                   Y.one('#responseform').delegate('valuechange', this.update_wordcount, this.VALUE_CHANGE_ELEMENTS, this);
+//                   Y.one('#responseform').delegate('change', fthis.update_wordcount, this.CHANGE_ELEMENTS, this);
                    // This is for TinyMCE only!
                    this.init_tinymce();
                    this.update_wordcount();
