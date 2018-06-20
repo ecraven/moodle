@@ -108,14 +108,9 @@ define([
                    this.ctx[$params.editorname] = $params;
                    this.lastTimeout = null;
                    var self = this;
-                   if (M.mod_quiz) {
-                       M.mod_quiz.wordcount.update = function() {
-                           self.update_wordcount();
-                       };
-                       M.mod_quiz.autosave.form.on('change', this.update_wordcount, this);
-                       this.init_tinymce();
-                       this.update_wordcount();
-                   }
+                   Y.one("#responseform").on('change', this.update_wordcount, this);
+                   this.init_tinymce();
+                   this.update_wordcount();
                }
            };
        });

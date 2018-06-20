@@ -36,8 +36,11 @@
     text-decoration: blink;
 }
 
-.que.essay span.current.overlimit {
+span.wordcount.overlimit {
     border-bottom: thin dotted;
-    color: red;
+    color: #d9534f;
     font-style: italic;
+}
+span.wordcount.underlimit {
+    color: #5cb85c;
 }
