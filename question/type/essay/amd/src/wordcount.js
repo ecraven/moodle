@@ -55,18 +55,13 @@ define([
 
                ctx: {},
                lastTimeout: null,
-               wc_done: function(transactionid, response) {
-                   var jsondata = Y.JSON.parse(response.responseText);
-                   self = this;
+               wc_done: function(data, response) {
                    console.log('ajax arrived');
-                   for (var key in jsondata) {
-                       self.set_wordcount_html(key, jsondata[key]);
+                   for (var key in data) {
+                       if (data.hasOwnProperty(key)) {
+                           this.set_wordcount_html(key, data[key]);
+                       }
                    }
-                   /*$.each(jsondata,function(key,value) {
-                       words = value.words;
-                       characters = value.characters;
-                       self.set_wordcount(key, characters, words);
-                   });*/
                    this.in_flight = false;
                },
                wc_failed: function() {
@@ -94,11 +89,15 @@ define([
                        }
 //                       if(!mythis.in_flight) {
                        console.log('ajax sent');
-                           mythis.in_flight = Y.io(M.cfg.wwwroot + "/question/type/essay/wc.ajax.php", {
-                               form: document.getElementById('responseform'),
-                               method: "POST",
-                               on: { success: mythis.wc_done, failure: mythis.wc_failed}, context: mythis});
-                      // }
+//                       var data = new FormData(document.getElementById('responseform'));
+                       mythis.in_flight = $.ajax({
+                           url: M.cfg.wwwroot + "/question/type/essay/wc.ajax.php",
+                           data: $('#responseform').serialize(),
+                           method: 'POST',
+                           context: mythis,
+                           success: mythis.wc_done,
+                           error: mythis.wc_failed
+                       });
                    }, 500);
                },
                init_tinymce: function(repeatcount) {
@@ -129,8 +128,6 @@ define([
                    // This is for Atto and clear Textarea!
                     var mythis = this;
                    $('#responseform').find(this.VALUE_CHANGE_ELEMENTS).on('change keyup paste', function() {mythis.update_wordcount(); });
-//                   Y.one('#responseform').delegate('valuechange', this.update_wordcount, this.VALUE_CHANGE_ELEMENTS, this);
-//                   Y.one('#responseform').delegate('change', fthis.update_wordcount, this.CHANGE_ELEMENTS, this);
                    // This is for TinyMCE only!
                    this.init_tinymce();
                    this.update_wordcount();
