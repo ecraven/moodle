@@ -7,7 +7,7 @@ require_sesskey();
 
 $res = array();
 foreach ($_POST as $key => $value) {
-    if (!empty(preg_grep('/q.*_answer/', array($key)))) {
+    if (!empty(preg_grep('/^q.*_answer$/', array($key)))) {
         $res[$key] = array("words" => count_words($value), "characters" => count_letters($value));
     }
 }
