@@ -23,11 +23,15 @@
 define([
     'jquery',
     'core/str',
+    'core/templates',
+    'core/notification',
     'qtype_essay/wordcount'
 ],
        function(
            $,
-           Str
+           Str,
+           templates,
+           notification
        ) {
            return {
                /**
@@ -72,10 +76,25 @@ define([
                },
                set_wordcount: function(key, chars, words) {
                    console.log('wordcount ' + key + ' ' + chars + ' / ' + words);
+
                    const max_chars = this.ctx[key].charlimit;
                    const max_words = this.ctx[key].wordlimit;
                    const words_ok = words <= max_words;
                    const chars_ok = chars <= max_chars;
+                   var context = {
+                       words_ok: words <= max_words,
+                       chars_ok: chars <= max_chars,
+                       max_words: max_words,
+                       max_chars: max_chars
+                   };
+
+                   templates.render('qtype_essay/wordcount', context)
+                       .then(function(html, js) {
+                           $(document.getElementById(key + '_wordcount')).html(html);
+                       })
+                       .fail(notification.exception);
+/*
+
                    const count = '<span class="wordcount ' + (words_ok ? "underlimit" : "overlimit") + '">' + (words_ok ? "✓" : "×") + ' ' + M.util.get_string('words', 'qtype_essay') + ': ' + words + ' / ' + max_words + '</span>'
                          + ', '
                          + '<span class="wordcount ' + (chars_ok ? "underlimit" : "overlimit") + '">' + (chars_ok ? "✓" : "×") + ' ' + M.util.get_string('characters', 'qtype_essay') + ': ' + chars + ' / ' + max_chars + '</span>';
@@ -83,7 +102,7 @@ define([
                    console.log(count);
                    const target = $(document.getElementById(key + '_wordcount'));
                    console.log(target);
-                   target.html(count);
+                   target.html(count);*/
                },
                update_wordcount: function(edi) {
                    if (this.lastTimeout !== null) {

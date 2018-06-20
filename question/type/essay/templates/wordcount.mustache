@@ -1,0 +1,9 @@
+<span class="wordcount {{#words_ok}}underlimit{{/words_ok}}{{^words_ok}}overlimit{{/words_ok}}">
+    {{#words_ok}}✓{{/words_ok}}{{^words_ok}}×{{/words_ok}}
+    {{#str}}words,qtype_essay{{/str}}: {{words}} / {{max_words}}
+</span>
+,
+<span class="wordcount {{#chars_ok}}underlimit{{/chars_ok}}{{^chars_ok}}overlimit{{/chars_ok}}">
+    {{#chars_ok}}✓{{/chars_ok}}{{^chars_ok}}×{{/chars_ok}}
+    {{#str}}chars,qtype_essay{{/str}}: {{chars}} / {{max_chars}}
+</span>
