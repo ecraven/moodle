@@ -85,7 +85,7 @@ define([
                    console.log(target);
                    target.html(count);
                },
-               update_wordcount: function() {
+               update_wordcount: function(edi) {
                    if (this.lastTimeout !== null) {
                        window.clearTimeout(this.lastTimeout);
                    }
@@ -99,6 +99,10 @@ define([
                        //                       if(!mythis.in_flight) {
                        console.log('ajax sent');
                        //                       var data = new FormData(document.getElementById('responseform'));
+
+                       if (typeof window.tinyMCE !== 'undefined') {
+                           window.tinyMCE.selectedInstance.save();
+                       }
                        mythis.in_flight = $.ajax({
                            url: M.cfg.wwwroot + "/question/type/essay/wc.ajax.php",
                            data: $('#responseform').serialize(),
@@ -108,6 +112,11 @@ define([
                            error: mythis.wc_failed
                        });
                    }, 500);
+               },
+               update_wordcount_tinymce: function(editor) {
+                   console.log(editor.save);
+//                   editor.save();
+                   this.update_wordcount();
                },
                init_tinymce: function(repeatcount) {
                    if (typeof window.tinyMCE === 'undefined') {
@@ -125,12 +134,14 @@ define([
 
                init_tinymce_editor: function(e, editor) {
                    console.log(this);
+                   var mythis = this;
 //                   var tinymce_wordcount = Y.bind(this.update_wordcount, this);
-                    editor.onChange.add(this.update_wordcount, this);
-                    editor.onRedo.add(this.update_wordcount, this);
-                    editor.onUndo.add(this.update_wordcount, this);
-                    editor.onKeyPress.add(this.update_wordcount, this);
+                    editor.onChange.add(this.update_wordcount_tinymce, this);
+                    editor.onRedo.add(this.update_wordcount_tinymce, this);
+                    editor.onUndo.add(this.update_wordcount_tinymce, this);;
+                    editor.onKeyPress.add(this.update_wordcount_tinymce, this);
                },
+
                init: function($params) {
                    this.ctx[$params.editorname] = $params;
                    this.lastTimeout = null;
