@@ -51,6 +51,7 @@ define([
                TINYMCE_DETECTION_DELAY:  500,
 
                ctx: {},
+               lastTimeout: null,
                wc_done: function(transactionid, response) {
                    var jsondata = Y.JSON.parse(response.responseText);
                    self = this;
@@ -71,8 +72,18 @@ define([
                    $(document.getElementById(key + '_wordcount')).html(count);
                },
                update_wordcount: function() {
-                   if(!this.in_flight)
-                       this.in_flight = Y.io(M.cfg.wwwroot + "/question/type/essay/wc.ajax.php", {form: document.getElementById('responseform'), method: "POST", on: { success: this.wc_done, failure: this.wc_failed}, context: this});
+                   if (this.lastTimeout !== null) {
+                       window.clearTimeout(this.lastTimeout);
+                   }
+                   var mythis = this;
+                   this.lastTimeout = setTimeout(function() {
+                       if(!mythis.in_flight) {
+                           mythis.in_flight = Y.io(M.cfg.wwwroot + "/question/type/essay/wc.ajax.php", {
+                               form: document.getElementById('responseform'),
+                               method: "POST",
+                               on: { success: mythis.wc_done, failure: mythis.wc_failed}, context: mythis});
+                       }
+                   }, 500);
                },
                init_tinymce: function(repeatcount) {
                    if (typeof window.tinyMCE === 'undefined') {
@@ -95,6 +106,7 @@ define([
                },
                init: function($params) {
                    this.ctx[$params.editorname] = $params;
+                   this.lastTimeout = null;
                    var self = this;
                    M.mod_quiz.wordcount.update = function() {
                        self.update_wordcount();
