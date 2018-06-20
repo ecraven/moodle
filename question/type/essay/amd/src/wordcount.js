@@ -77,7 +77,6 @@ define([
                init_tinymce: function(repeatcount) {
                    if (typeof window.tinyMCE === 'undefined') {
                        if (repeatcount > 0) {
-                           console.log('delaying ' + repeatcount);
                            Y.later(this.TINYMCE_DETECTION_DELAY, this, this.init_tinymce, [repeatcount - 1]);
                        } else {
                            console.log('Gave up looking for TinyMCE.');
@@ -88,11 +87,11 @@ define([
                },
 
                init_tinymce_editor: function(e, editor) {
-                   console.log('editor added ' + editor);
-                   editor.onChange.add(this.update_wordcount);
-                   editor.onRedo.add(this.update_wordcount);
-                   editor.onUndo.add(this.update_wordcount);
-                   editor.onKeyDown.add(this.update_wordcount);
+                   var tinymce_wordcount = Y.bind(this.update_wordcount, this);
+                   editor.onChange.add(tinymce_wordcount);
+                   editor.onRedo.add(tinymce_wordcount);
+                   editor.onUndo.add(tinymce_wordcount);
+                   editor.onKeyDown.add(tinymce_wordcount);
                },
                init: function($params) {
                    this.ctx[$params.editorname] = $params;
