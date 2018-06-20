@@ -29,7 +29,6 @@ define([
            $,
            Str
        ) {
-           M.mod_quiz.wordcount = {};
            return {
                /**
                 * The number of times to try redetecting TinyMCE.
@@ -59,7 +58,7 @@ define([
                    console.log('ajax arrived');
                    for (var key in data) {
                        if (data.hasOwnProperty(key)) {
-                           this.set_wordcount_html(key, data[key]);
+                           this.set_wordcount(key, data[key].characters, data[key].words);
                        }
                    }
                    this.in_flight = false;
@@ -72,9 +71,19 @@ define([
                    $(document.getElementById(key + '_wordcount')).replaceWith(html);
                },
                set_wordcount: function(key, chars, words) {
-                   var count = key + ': ' + M.util.get_string('words', 'qtype_essay') + ': ' + words + ' / ' + this.ctx[key].wordlimit + '<br />' +
-                       M.util.get_string('characters', 'qtype_essay') + ': ' + chars + ' / ' + this.ctx[key].charlimit;
-                   $(document.getElementById(key + '_wordcount')).html(count);
+                   console.log('wordcount ' + key + ' ' + chars + ' / ' + words);
+                   const max_chars = this.ctx[key].charlimit;
+                   const max_words = this.ctx[key].wordlimit;
+                   const words_ok = words <= max_words;
+                   const chars_ok = chars <= max_chars;
+                   const count = '<span class="wordcount ' + (words_ok ? "underlimit" : "overlimit") + '">' + (words_ok ? "✓" : "×") + ' ' + M.util.get_string('words', 'qtype_essay') + ': ' + words + ' / ' + max_words + '</span>'
+                         + ', '
+                         + '<span class="wordcount ' + (chars_ok ? "underlimit" : "overlimit") + '">' + (chars_ok ? "✓" : "×") + ' ' + M.util.get_string('characters', 'qtype_essay') + ': ' + chars + ' / ' + max_chars + '</span>';
+
+                   console.log(count);
+                   const target = $(document.getElementById(key + '_wordcount'));
+                   console.log(target);
+                   target.html(count);
                },
                update_wordcount: function() {
                    if (this.lastTimeout !== null) {
@@ -85,11 +94,11 @@ define([
                    this.lastTimeout = setTimeout(function() {
                        if (mythis.in_flight) {
                            console.log('event should be removed');
-//                           mythis.in_flight.abort();
+                           //                           mythis.in_flight.abort();
                        }
-//                       if(!mythis.in_flight) {
+                       //                       if(!mythis.in_flight) {
                        console.log('ajax sent');
-//                       var data = new FormData(document.getElementById('responseform'));
+                       //                       var data = new FormData(document.getElementById('responseform'));
                        mythis.in_flight = $.ajax({
                            url: M.cfg.wwwroot + "/question/type/essay/wc.ajax.php",
                            data: $('#responseform').serialize(),
@@ -125,10 +134,10 @@ define([
                init: function($params) {
                    this.ctx[$params.editorname] = $params;
                    this.lastTimeout = null;
-                       // This is for Atto and clear Textarea!
+                   // This is for Atto and clear Textarea!
 
                    // This is for Atto and clear Textarea!
-                    var mythis = this;
+                   var mythis = this;
                    $('#responseform').find(this.VALUE_CHANGE_ELEMENTS).on('change keyup paste', function() {mythis.update_wordcount(); });
                    // This is for TinyMCE only!
                    this.init_tinymce();
