@@ -52,7 +52,7 @@ define([
                    $(document.getElementById(key + '_wordcount')).html(count);
                },
                update_wordcount: function() {
-                   this.in_flight = Y.io("/essay/question/type/essay/wc.ajax.php", {form: document.getElementById('responseform'), method: "POST", on: { success: this.wc_done, failure: this.wc_failed}, context: this});
+                   this.in_flight = Y.io(M.cfg.wwwroot + "/question/type/essay/wc.ajax.php", {form: document.getElementById('responseform'), method: "POST", on: { success: this.wc_done, failure: this.wc_failed}, context: this});
                },
                init: function($params) {
                    this.ctx[$params.editorname] = $params;
