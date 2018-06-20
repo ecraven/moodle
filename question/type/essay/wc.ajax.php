@@ -2,6 +2,7 @@
 define('AJAX_SCRIPT', true);
 
 require_once(__DIR__ . '/../../../config.php');
+require_once(__DIR__ . '/locallib.php');
 
 require_sesskey();
 
@@ -18,10 +19,7 @@ $res = array();
 foreach ($_POST as $key => $value) {
     if(startsWith($key, "q")
        && endsWith($key, "_answer")) {
-        $words = count_words($value);
-        $chars = count_letters($value);
-        $res[$key] = array("words" => $words,
-                           "characters" => $chars);
+        $res[$key] = qtype_essay_format_wordcount($key, 5, 10, $value);
     }
 }
 echo json_encode($res);
