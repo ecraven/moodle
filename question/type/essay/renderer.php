@@ -81,14 +81,19 @@ class qtype_essay_renderer extends qtype_renderer {
         $result .= html_writer::start_tag('div', array('class' => 'ablock'));
         $result .= html_writer::tag('div', $answer, array('class' => 'answer'));
         if ($question->responselimitpolicy > 0) {
-            $content = $this->render_from_template('qtype_essay/wordcount', [
-                'words_ok' => TRUE,
-                'chars_ok' => TRUE,
-                'max_words' => 150,
-                'max_chars' => 160,
-                'chars' => 15,
-                'words' => 16
-            ]);
+            $ro = !empty($options->readonly);
+            $words = count_words($answer);
+            $chars = count_letters($answer);
+            $max_chars = $question->charlimit;
+            $max_words = $question->wordlimit;
+            $content = $ro ? ($this->render_from_template('qtype_essay/wordcount', [
+                'words_ok' => $words <= $max_words,
+                'chars_ok' => $chars <= $max_chars,
+                'max_words' => $max_words,
+                'max_chars' => $max_chars,
+                'chars' => $chars,
+                'words' => $words,
+            ])) : "";
             $result .= html_writer::tag('div', $content, array('id' => $qa->get_qt_field_name('answer') . '_wordcount',
                                                          'class' => 'wordcount'));
         }
@@ -100,7 +105,8 @@ class qtype_essay_renderer extends qtype_renderer {
             $params = array(
                 'wordlimit' => $question->wordlimit,
                 'charlimit' => $question->charlimit,
-                'editorname' => $qa->get_qt_field_name('answer')
+                'editorname' => $qa->get_qt_field_name('answer'),
+                'readonly' => !empty($options->readonly),
             );
             $this->page->requires->strings_for_js(array('words', 'characters'), 'qtype_essay');
             $this->page->requires->js_call_amd('qtype_essay/wordcount', 'init', [$params]);

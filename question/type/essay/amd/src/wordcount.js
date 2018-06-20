@@ -163,6 +163,9 @@ define([
                },
 
                init: function($params) {
+                   if($params.readonly) {
+                       return;
+                   }
                    this.ctx[$params.editorname] = $params;
                    this.lastTimeout = null;
                    // This is for Atto and clear Textarea!
