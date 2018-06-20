@@ -75,7 +75,6 @@ define([
                    $(document.getElementById(key + '_wordcount')).replaceWith(html);
                },
                set_wordcount: function(key, chars, words) {
-                   console.log('wordcount ' + key + ' ' + chars + ' / ' + words);
 
                    const max_chars = this.ctx[key].charlimit;
                    const max_words = this.ctx[key].wordlimit;
@@ -85,7 +84,9 @@ define([
                        words_ok: words <= max_words,
                        chars_ok: chars <= max_chars,
                        max_words: max_words,
-                       max_chars: max_chars
+                       max_chars: max_chars,
+                       chars: chars,
+                       words: words
                    };
 
                    templates.render('qtype_essay/wordcount', context)
@@ -109,7 +110,7 @@ define([
                        window.clearTimeout(this.lastTimeout);
                    }
                    var mythis = this;
-                   console.log('setTimeout', Math.random());
+                   //console.log('setTimeout', Math.random());
                    this.lastTimeout = setTimeout(function() {
                        if (mythis.in_flight) {
                            console.log('event should be removed');
@@ -133,7 +134,7 @@ define([
                    }, 500);
                },
                update_wordcount_tinymce: function(editor) {
-                   console.log(editor.save);
+                   //console.log(editor.save);
 //                   editor.save();
                    this.update_wordcount();
                },

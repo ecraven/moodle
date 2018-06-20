@@ -29,10 +29,18 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Generates the output for essay questions.
  *
+ * @throws
  * @copyright  2009 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_essay_renderer extends qtype_renderer {
+    /**
+     * @param question_attempt $qa
+     * @param question_display_options $options
+     * @return array|string
+     * @throws coding_exception
+     * @throws moodle_exception
+     */
     public function formulation_and_controls(question_attempt $qa,
             question_display_options $options) {
 
@@ -73,7 +81,15 @@ class qtype_essay_renderer extends qtype_renderer {
         $result .= html_writer::start_tag('div', array('class' => 'ablock'));
         $result .= html_writer::tag('div', $answer, array('class' => 'answer'));
         if ($question->responselimitpolicy > 0) {
-            $result .= html_writer::tag('div', '', array('id' => $qa->get_qt_field_name('answer') . '_wordcount',
+            $content = $this->render_from_template('qtype_essay/wordcount', [
+                'words_ok' => TRUE,
+                'chars_ok' => TRUE,
+                'max_words' => 150,
+                'max_chars' => 160,
+                'chars' => 15,
+                'words' => 16
+            ]);
+            $result .= html_writer::tag('div', $content, array('id' => $qa->get_qt_field_name('answer') . '_wordcount',
                                                          'class' => 'wordcount'));
         }
 
