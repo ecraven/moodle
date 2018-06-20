@@ -128,7 +128,7 @@ define([
 
                    // This is for Atto and clear Textarea!
                     var mythis = this;
-                   $('#responseform').find(this.VALUE_CHANGE_ELEMENTS).on('change', function() {mythis.update_wordcount()});
+                   $('#responseform').find(this.VALUE_CHANGE_ELEMENTS).on('change keyup paste', function() {mythis.update_wordcount(); });
 //                   Y.one('#responseform').delegate('valuechange', this.update_wordcount, this.VALUE_CHANGE_ELEMENTS, this);
 //                   Y.one('#responseform').delegate('change', fthis.update_wordcount, this.CHANGE_ELEMENTS, this);
                    // This is for TinyMCE only!
