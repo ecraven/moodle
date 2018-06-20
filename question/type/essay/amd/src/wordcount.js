@@ -56,6 +56,7 @@ define([
                    var jsondata = Y.JSON.parse(response.responseText);
                    self = this;
                    for (var key in jsondata) {
+                       console.log(key, jsondata[key]);
                        self.set_wordcount_html(key, jsondata[key]);
                    }
                    /*$.each(jsondata,function(key,value) {
