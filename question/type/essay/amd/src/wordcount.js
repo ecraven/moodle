@@ -56,7 +56,6 @@ define([
                    var jsondata = Y.JSON.parse(response.responseText);
                    self = this;
                    for (var key in jsondata) {
-                       console.log(key, jsondata[key]);
                        self.set_wordcount_html(key, jsondata[key]);
                    }
                    /*$.each(jsondata,function(key,value) {
@@ -84,13 +83,16 @@ define([
                    }
                    var mythis = this;
                    this.lastTimeout = setTimeout(function() {
-                       if(!mythis.in_flight) {
+                       if (mythis.in_flight) {
+                           mythis.in_flight.cancel();
+                       }
+//                       if(!mythis.in_flight) {
                            mythis.in_flight = Y.io(M.cfg.wwwroot + "/question/type/essay/wc.ajax.php", {
                                form: document.getElementById('responseform'),
                                method: "POST",
                                on: { success: mythis.wc_done, failure: mythis.wc_failed}, context: mythis});
-                       }
-                   }, 500);
+                      // }
+                   }, 1000);
                },
                init_tinymce: function(repeatcount) {
                    if (typeof window.tinyMCE === 'undefined') {
