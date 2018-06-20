@@ -97,6 +97,7 @@ define([
                    window.tinyMCE.onAddEditor.add(Y.bind(this.init_tinymce_editor, this));
                },
 
+
                init_tinymce_editor: function(e, editor) {
                    var tinymce_wordcount = Y.bind(this.update_wordcount, this);
                    editor.onChange.add(tinymce_wordcount);
@@ -112,7 +113,9 @@ define([
                        M.mod_quiz.wordcount.update = function() {
                            self.update_wordcount();
                        };
-                       M.mod_quiz.autosave.form.on('change', this.update_wordcount, this);
+                       // This is for Atto and clear Textarea!
+                       Y.one('#responseform').delegate('change', this.update_wordcount, 'textarea', this);
+                       // This is for TinyMCE only!
                        this.init_tinymce();
                        this.update_wordcount();
                    }
