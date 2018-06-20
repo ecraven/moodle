@@ -85,7 +85,6 @@ class qtype_essay_renderer extends qtype_renderer {
 
         if ($question->responselimitpolicy > 0) {
             $params = array(
-                'block' => $question->responselimitpolicy == qtype_essay::LIMIT_HARD,
                 'wordlimit' => $question->wordlimit,
                 'charlimit' => $question->charlimit,
                 'editorname' => $qa->get_qt_field_name('answer')

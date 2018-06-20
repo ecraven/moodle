@@ -38,7 +38,6 @@ require_once($CFG->libdir . '/questionlib.php');
 class qtype_essay extends question_type {
     const LIMIT_NONE = 0;
     const LIMIT_SOFT = 1;
-    const LIMIT_HARD = 2;
 
     public function is_manual_graded() {
         return true;
@@ -137,7 +136,6 @@ class qtype_essay extends question_type {
         return array(
             self::LIMIT_NONE => get_string('unlimited'),
             self::LIMIT_SOFT => get_string('responselimitsoft', 'qtype_essay'),
-            self::LIMIT_HARD => get_string('responselimithard', 'qtype_essay'),
         );
     }
 

@@ -55,14 +55,12 @@ $string['privacy:metadata'] = 'The Essay question type plugin does not store any
 $string['responsefieldlines'] = 'Input box size';
 $string['responseformat'] = 'Response format';
 $string['responseheader'] = 'Response';
-$string['responselimithard'] = 'Hard limit';
 $string['responselimitsoft'] = 'Soft limit';
 $string['responselimitpolicy'] = 'Response limit';
 $string['responselimitpolicy_help'] = 'This setting has three options:
 <ul>
 <li>Unlimited  = no limit is imposed on user response</li>
 <li>Soft limit = displays response word/character count to user and grader, but does not block user submission</li>
-<li>Hard limit = forces user to limit word/character count of response</li>
 </ul>
 Responses can be limited by words and/or characters.  Any non-zero limits will be imposed according to the policy chosen here.
 Note that count in an HTML formatted response are complicated by HTML data.';
