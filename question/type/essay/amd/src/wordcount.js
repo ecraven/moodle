@@ -126,10 +126,10 @@ define([
                init_tinymce_editor: function(e, editor) {
                    console.log(this);
 //                   var tinymce_wordcount = Y.bind(this.update_wordcount, this);
-                   ///editor.onChange.add(this.update_wordcount, this);
-                   editor.onRedo.add(this.update_wordcount, this);
-                   editor.onUndo.add(this.update_wordcount, this);
-                   editor.onKeyPress.add(this.update_wordcount, this);
+                    editor.onChange.add(this.update_wordcount, this);
+                    editor.onRedo.add(this.update_wordcount, this);
+                    editor.onUndo.add(this.update_wordcount, this);
+                    editor.onKeyPress.add(this.update_wordcount, this);
                },
                init: function($params) {
                    this.ctx[$params.editorname] = $params;
