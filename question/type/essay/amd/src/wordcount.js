@@ -55,16 +55,22 @@ define([
                wc_done: function(transactionid, response) {
                    var jsondata = Y.JSON.parse(response.responseText);
                    self = this;
-                   $.each(jsondata,function(key,value) {
+                   for (var key in jsondata) {
+                       self.set_wordcount_html(key, jsondata[key]);
+                   }
+                   /*$.each(jsondata,function(key,value) {
                        words = value.words;
                        characters = value.characters;
                        self.set_wordcount(key, characters, words);
-                   });
+                   });*/
                    this.in_flight = false;
                },
                wc_failed: function() {
                    this.in_flight = false;
                    alert("failed");
+               },
+               set_wordcount_html: function(key, html) {
+                   $(document.getElementById(key + '_wordcount')).replaceWith(html);
                },
                set_wordcount: function(key, chars, words) {
                    var count = key + ': ' + M.util.get_string('words', 'qtype_essay') + ': ' + words + ' / ' + this.ctx[key].wordlimit + '<br />' +
@@ -108,17 +114,12 @@ define([
                init: function($params) {
                    this.ctx[$params.editorname] = $params;
                    this.lastTimeout = null;
-                   var self = this;
-                   if (M.mod_quiz) {
-                       M.mod_quiz.wordcount.update = function() {
-                           self.update_wordcount();
-                       };
                        // This is for Atto and clear Textarea!
-                       Y.one('#responseform').delegate('change', this.update_wordcount, 'textarea', this);
-                       // This is for TinyMCE only!
-                       this.init_tinymce();
-                       this.update_wordcount();
-                   }
+                   Y.one('#responseform').delegate('change', this.update_wordcount, 'textarea', this);
+                   // This is for TinyMCE only!
+                   this.init_tinymce();
+                   this.update_wordcount();
+
                }
            };
        });

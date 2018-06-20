@@ -18,7 +18,10 @@ $res = array();
 foreach ($_POST as $key => $value) {
     if(startsWith($key, "q")
        && endsWith($key, "_answer")) {
-        $res[$key] = array("words" => count_words($value), "characters" => count_letters($value));
+        $words = count_words($value);
+        $chars = count_letters($value);
+        $res[$key] = array("words" => $words,
+                           "characters" => $chars);
     }
 }
 echo json_encode($res);

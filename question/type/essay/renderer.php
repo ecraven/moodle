@@ -74,15 +74,7 @@ class qtype_essay_renderer extends qtype_renderer {
         $result .= html_writer::start_tag('div', array('class' => 'ablock'));
         $result .= html_writer::tag('div', $answer, array('class' => 'answer'));
         if ($question->responselimitpolicy > 0) {
-            $result .= html_writer::start_tag('div', array('class' => 'wordcount',
-                                                           'name' => 'wordcount',
-                                                           'id' => $qa->get_qt_field_name('answer') . "_wordcount"));
-            $result .= get_string('characters', 'qtype_essay') . ': ' . count_letters($answer)
-                    . ' / ' . $question->charlimit;
-            $result .= ', ';
-            $result .= get_string('words', 'qtype_essay') . ': ' . count_words($answer)
-                    . ' / ' . $question->wordlimit;
-            $result .= html_writer::end_tag('div');
+            $result .= $this->format_wordcount($qa, $question, $answer);
         }
 
         $result .= html_writer::tag('div', $files, array('class' => 'attachments'));
@@ -101,7 +93,26 @@ class qtype_essay_renderer extends qtype_renderer {
 
         return $result;
     }
-
+    function format_wordcount($qa, $question, $answer) {
+        $result = html_writer::start_tag('div', array('class' => 'wordcount',
+                                                      'name' => 'wordcount',
+                                                      'id' => $qa->get_qt_field_name('answer') . "_wordcount"));
+        $chars = count_letters($answer);
+        $result .= html_writer::start_tag('span', array('class' => "wordcount " . ($chars <= $question->charlimit ? "underlimit" : "overlimit")));
+        $result .= ($chars <= $question->charlimit ? "✓" : "×");
+        $result .= get_string('characters', 'qtype_essay') . ': ' . $chars
+                . ' / ' . $question->charlimit;
+        $result .= html_writer::end_tag('span');
+        $result .= ', ';
+        $words = count_words($answer);
+        $result .= html_writer::start_tag('span', array('class' => "wordcount " . ($words <= $question->wordlimit ? "underlimit" : "overlimit")));
+        $result .= ($words <= $question->wordlimit ? "✓" : "×");
+        $result .= get_string('words', 'qtype_essay') . ': ' . $words
+                . ' / ' . $question->wordlimit;
+        $result .= html_writer::end_tag('span');
+        $result .= html_writer::end_tag('div');
+        return $result;
+    }
     /**
      * Displays any attached files when the question is in read-only mode.
      * @param question_attempt $qa the question attempt to display.
